@@ -30,6 +30,7 @@ OUT_DIR = Path.cwd() / "data" / "sshots"
 EMBEDDINGS_PATH = Path.cwd() / "models" / "offender_embeddings.pkl"
 TITLE_KEYWORD = "Messenger call"  # Example keyword to identify target window
 INTERVAL_SEC = 1.0
+COOLDOWN_SEC = 5 * 60  # 5 minutes cooldown between notifications
 OFFENDER_REGISTRY = pd.read_csv(OFFENDER_CSV_PATH)
 IS_MACOS = platform.system() == "Darwin"
 
@@ -263,7 +264,14 @@ def main():
         print(f"Starting monitoring for windows containing '{TITLE_KEYWORD}'...")
         print("Press Ctrl+C to stop.")
 
+        last_notification_time = 0
+
         while True:
+            current_time = time.time()
+            if current_time - last_notification_time < COOLDOWN_SEC:
+                time.sleep(INTERVAL_SEC)
+                continue
+
             addr, geom = find_target()
             if geom:
                 focus_window(addr)
@@ -290,7 +298,9 @@ def main():
                                     offender,
                                     recipient_username=settings.INSTAGRAM_DM_RECIPIENT,
                                 )
-                                if not success:
+                                if success:
+                                    last_notification_time = time.time()
+                                else:
                                     print("Failed to send offender alert.")
 
                 else:

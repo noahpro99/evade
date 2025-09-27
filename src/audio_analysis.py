@@ -4,6 +4,7 @@ from settings import settings
 
 
 def analyze_text_for_threats(text: str) -> bool:
+    print("Analyzing text for threats...")
     if not settings.TOGETHER_API_KEY:
         print("Warning: TOGETHER_API_KEY not set, skipping AI analysis")
         return False
