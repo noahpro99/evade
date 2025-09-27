@@ -12,8 +12,6 @@ dependencies = [
     "pandas>=2.3.2",
     "pygetwindow>=0.0.9",
     "timm>=1.0.20",
-    "torch>=2.8.0",
-    "torchvision>=0.23.0",
 ]
 
 [project.optional-dependencies]
