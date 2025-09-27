@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 import torch
 
+from audio import spawn_audio_detection_thread
 from data import (
     OFFENDER_CSV_PATH,
     OFFENDER_IMAGES_DIR,
@@ -251,6 +252,13 @@ def main():
             with open(EMBEDDINGS_PATH, "rb") as f:
                 offender_embeddings = pickle.load(f)
             print(f"Loaded {len(offender_embeddings)} offender embeddings.")
+
+        # Start audio monitoring in a separate thread
+        audio_thread = threading.Thread(
+            target=spawn_audio_detection_thread, daemon=True
+        )
+        audio_thread.start()
+        print("Audio monitoring started in background thread.")
 
         print(f"Starting monitoring for windows containing '{TITLE_KEYWORD}'...")
         print("Press Ctrl+C to stop.")
