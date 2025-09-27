@@ -1,53 +1,53 @@
 from instagrapi import Client
 from pathlib import Path
-import csv
-import requests
 from settings import settings
 
-# Initialize the client
-cl = Client()
-
-# Login with your Instagram credentials
-username = settings.INSTAGRAM_USERNAME
-password = settings.INSTAGRAM_PASSWORD
+instagram_client = Client()
 
 try:
-    cl.login(username, password)
+    instagram_client.login(settings.INSTAGRAM_USERNAME, settings.INSTAGRAM_PASSWORD)
     print("Login successful!")
 except Exception as e:
     print(f"Login failed: {e}")
     exit(1)
 
-# Photo details
-photo_url = "https://media.licdn.com/dms/image/v2/D4E03AQGTDul6VG4aLg/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1726866822502?e=1761782400&v=beta&t=bzu2q7kJsXbF0IavRHHsQBPlyEqrevwBWGV1XzhQJ6M"
-photo_path = Path("downloaded_photo.jpg")
 
-# Download the photo
-try:
-    response = requests.get(photo_url)
-    response.raise_for_status()  # Check for HTTP errors
-    with open(photo_path, "wb") as f:
-        f.write(response.content)
-    print(f"Photo downloaded successfully: {photo_path}")
-except Exception as e:
-    print(f"Failed to download photo: {e}")
-    exit(1)
+def send_photo_dm(photo_path, recipient_username, message="Check out this photo!"):
+    """
+    Send a local photo via Instagram DM with an optional message
 
-# Send the photo as a direct message
-try:
-    recipient_username = "sethpro9"  # Replace with the recipient's username
-    user_id = cl.user_id_from_username(recipient_username)
-    print(f"Sending photo to user ID: {user_id}")
+    Args:
+        photo_path (str or Path): Path to the local photo file to send
+        recipient_username (str): Instagram username of the recipient
+        message (str): Optional message to send with the photo
 
-    # Send photo first (current API doesn't support text parameter)
-    result = cl.direct_send_photo(str(photo_path), [user_id])
-    print("Photo sent successfully!")
+    Returns:
+        bool: True if successful, False if failed
+    """
+    try:
+        # Convert to Path object and check if file exists
+        photo_file = Path(photo_path)
+        if not photo_file.exists():
+            print(f"Photo file not found: {photo_file}")
+            return False
 
-    # Send text message separately
-    message = "Check out this photo!"
-    cl.direct_send(message, [user_id])
-    print("Message sent successfully!")
+        print(f"Sending photo: {photo_file}")
 
-except Exception as e:
-    print(f"Failed to send photo/message: {e}")
-    print(f"Error type: {type(e).__name__}")
+        user_id = instagram_client.user_id_from_username(recipient_username)
+        print(f"Sending photo to user ID: {user_id}")
+
+        # Send photo first
+        result = instagram_client.direct_send_photo(str(photo_file), [user_id])
+        print(f"Photo sent successfully! Result: {result}")
+
+        # Send text message separately if provided
+        if message:
+            instagram_client.direct_send(message, [user_id])
+            print("Message sent successfully!")
+
+        return True
+
+    except Exception as e:
+        print(f"Failed to send photo/message: {e}")
+        print(f"Error type: {type(e).__name__}")
+        return False

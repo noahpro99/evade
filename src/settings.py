@@ -18,6 +18,7 @@ class AppSettings(BaseSettings):
     INSTAGRAM_PASSWORD: str | None = Field(
         default=None, description="Instagram password for login"
     )
+    INSTAGRAM_DM_RECIPIENT: str = Field(description="Instagram username to send DMs to")
     TITLE_KEYWORD: str = Field(
         default="Messenger call", description="Keyword to identify target window"
     )

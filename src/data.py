@@ -24,6 +24,10 @@ def unmake_safe_name(safe_name: str) -> str:
         safe_name = safe_name.rsplit(".", 1)[0]
     return safe_name.replace("_", " ")
 
+def get_image_path(name: str) -> Path:
+    """Get the local image path for a given offender name."""
+    safe_name = make_safe_name(name)
+    return OFFENDER_IMAGES_DIR / f"{safe_name}.jpg"
 
 def download_images_if_missing():
     OFFENDER_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
