@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import json
 import os
 import subprocess as sp
@@ -10,7 +9,7 @@ import cv2
 import numpy as np
 import pandas as pd
 
-from data import OFFENDER_CSV_PATH, OFFENDER_IMAGES, unmake_safe_name
+from data import OFFENDER_CSV_PATH, OFFENDER_IMAGES_DIR, unmake_safe_name
 from detection import detect_faces
 from similarity import compare
 
@@ -58,8 +57,10 @@ def snap_once(geom: str) -> Path:
 
 def find_match(img_fromstream: np.ndarray) -> pd.Series | None:
     offender_name = None
-    for offender_filename in os.listdir(OFFENDER_IMAGES):
-        offender_image = cv2.imread(os.path.join(OFFENDER_IMAGES, offender_filename))
+    for offender_filename in os.listdir(OFFENDER_IMAGES_DIR):
+        offender_image = cv2.imread(
+            os.path.join(OFFENDER_IMAGES_DIR, offender_filename)
+        )
         if compare(offender_image, img_fromstream) >= COMPARISON_THRESHHOLD:
             offender_name = unmake_safe_name(offender_filename)
             print(f"Found matching offender: {offender_name}")

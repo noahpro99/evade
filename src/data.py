@@ -4,8 +4,7 @@ from pathlib import Path
 import requests
 
 OFFENDER_CSV_PATH = Path("data/offender_list - offender_list.csv")
-
-OFFENDER_IMAGES = "data/offender_list/images"
+OFFENDER_IMAGES_DIR = Path("data/offender_list/images")
 
 
 def make_safe_name(name: str) -> str:
@@ -23,8 +22,7 @@ def unmake_safe_name(safe_name: str) -> str:
 
 
 def download_images_if_missing():
-    images_dir = Path("data/offender_list/images")
-    images_dir.mkdir(parents=True, exist_ok=True)
+    OFFENDER_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 
     if OFFENDER_CSV_PATH.exists():
         with open(OFFENDER_CSV_PATH, "r", newline="", encoding="utf-8") as f:
@@ -41,7 +39,7 @@ def download_images_if_missing():
                         safe_name = make_safe_name(name)
 
                         # Use the person's name as the filename with .jpg extension
-                        filename = images_dir / f"{safe_name}.jpg"
+                        filename = OFFENDER_IMAGES_DIR / f"{safe_name}.jpg"
                         if not filename.exists():
                             try:
                                 resp = requests.get(link, timeout=10)

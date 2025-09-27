@@ -8,6 +8,8 @@ import torch.nn.functional as F
 from huggingface_hub import hf_hub_download
 from torchvision import transforms
 
+_EDGE_MODEL_CACHE: dict[str, torch.nn.Module] = {}
+
 model_configs = {
     "edgeface_base": {
         "repo": "idiap/EdgeFace-Base",
@@ -98,23 +100,44 @@ class TimmFRWrapperV2(nn.Module):
 
 
 def get_edge_model(name: str) -> torch.nn.Module:
-    if name not in get_edge_model.cache:
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        model_path = hf_hub_download(
-            repo_id=model_configs[name]["repo"],
-            filename=model_configs[name]["filename"],
-            local_dir="models",
+    """Return a cached EdgeFace model by name.
+
+    Ensures:
+    - Single download per model variant.
+    - post_setup returns an nn.Module (guards against accidental forward pass usage).
+    """
+    if name in _EDGE_MODEL_CACHE:
+        return _EDGE_MODEL_CACHE[name]
+
+    if name not in model_configs:
+        raise KeyError(
+            f"Unknown edge model variant '{name}'. Available: {list(model_configs)}"
         )
-        model = TimmFRWrapperV2(model_configs[name]["timm_model"], batchnorm=False)
-        model = model_configs[name]["post_setup"](model)
-        model.load_state_dict(torch.load(model_path, map_location="cpu"))
-        model = model.eval()
-        model.to(device)
-        get_edge_model.cache[name] = model
-    return get_edge_model.cache[name]
 
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    cfg = model_configs[name]
+    model_path = hf_hub_download(
+        repo_id=cfg["repo"],
+        filename=cfg["filename"],
+        local_dir="models",
+    )
+    model = TimmFRWrapperV2(cfg["timm_model"], batchnorm=False)
 
-get_edge_model.cache = {}
+    post_setup = cfg["post_setup"]
+    model = post_setup(model)
+    if not isinstance(model, torch.nn.Module):  # static type + runtime safety
+        raise TypeError(
+            f"post_setup for '{name}' must return nn.Module, got {type(model)}. Did you call model(...) instead of returning it?"
+        )
+
+    state = torch.load(model_path, map_location="cpu")
+    missing, unexpected = model.load_state_dict(state, strict=False)
+    if missing or unexpected:
+        print(f"[warn] Missing keys: {missing} | Unexpected keys: {unexpected}")
+
+    model.eval().to(device)
+    _EDGE_MODEL_CACHE[name] = model
+    return model
 
 
 def compare(img_left, img_right, variant="edgeface_s_gamma_05") -> float:
