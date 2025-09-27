@@ -162,25 +162,38 @@ const App = () => {
                   </p>
                 </div>
               </div>
-              <button
-                onClick={() =>
-                  setAlertSettings({
-                    ...alertSettings,
-                    autoCallPolice: !alertSettings.autoCallPolice,
-                  })
-                }
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  alertSettings.autoCallPolice ? "bg-dark" : "bg-white"
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    alertSettings.autoCallPolice
-                      ? "translate-x-6"
-                      : "translate-x-1"
+              <div className="flex items-center bg-white border border-dark rounded-full p-1">
+                <button
+                  onClick={() =>
+                    setAlertSettings({
+                      ...alertSettings,
+                      autoCallPolice: false,
+                    })
+                  }
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    !alertSettings.autoCallPolice
+                      ? "bg-dark text-white"
+                      : "text-dark hover:bg-white"
                   }`}
-                />
-              </button>
+                >
+                  Off
+                </button>
+                <button
+                  onClick={() =>
+                    setAlertSettings({
+                      ...alertSettings,
+                      autoCallPolice: true,
+                    })
+                  }
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    alertSettings.autoCallPolice
+                      ? "bg-dark text-white"
+                      : "text-dark hover:bg-white"
+                  }`}
+                >
+                  On
+                </button>
+              </div>
             </div>
             {alertSettings.autoCallPolice && (
               <div className="mt-4 p-3 bg-white rounded-lg">
@@ -325,20 +338,21 @@ const App = () => {
           <h3 className="font-semibold text-dark mb-4">
             Detection Sensitivity
           </h3>
-          <div className="space-y-3">
+          <div className="flex items-center bg-white border border-dark rounded-full p-1">
             {["Low", "Medium", "High"].map((level) => (
-              <label key={level} className="flex items-center space-x-3">
-                <input
-                  type="radio"
-                  name="sensitivity"
-                  checked={alertSettings.sensitivity === level}
-                  onChange={() =>
-                    setAlertSettings({ ...alertSettings, sensitivity: level })
-                  }
-                  className="w-4 h-4 text-dark"
-                />
-                <span className="text-dark">{level}</span>
-              </label>
+              <button
+                key={level}
+                onClick={() =>
+                  setAlertSettings({ ...alertSettings, sensitivity: level })
+                }
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex-1 ${
+                  alertSettings.sensitivity === level
+                    ? "bg-dark text-white"
+                    : "text-dark hover:bg-white"
+                }`}
+              >
+                {level}
+              </button>
             ))}
           </div>
         </div>
