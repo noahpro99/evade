@@ -1,5 +1,6 @@
 import json
 import os
+import pickle
 import platform
 import subprocess as sp
 import time
@@ -9,14 +10,17 @@ from pathlib import Path
 import cv2
 import numpy as np
 import pandas as pd
+import torch
+from torch.nn import functional as F
 
 from data import OFFENDER_CSV_PATH, OFFENDER_IMAGES_DIR, unmake_safe_name
 from detection import detect_faces
-from similarity import compare
+from similarity import _tx, get_edge_model
 
 OUT_DIR = Path.cwd() / "data" / "sshots"
-TITLE_KEYWORD = "Messenger call"
-INTERVAL_SEC = 1.0
+EMBEDDINGS_PATH = Path.cwd() / "models" / "offender_embeddings.pkl"
+TITLE_KEYWORD = "Photo Booth"  # Example keyword to identify target window
+INTERVAL_SEC = 1/30  # 30 FPS
 COMPARISON_THRESHHOLD = 70.0
 OFFENDER_REGISTRY = pd.read_csv(OFFENDER_CSV_PATH)
 IS_MACOS = platform.system() == "Darwin"
@@ -39,7 +43,6 @@ def find_target_linux():
     raw = run(["hyprctl", "clients", "-j"])
     for c in json.loads(raw):
         if TITLE_KEYWORD.lower() in c.get("title", "").lower():
-            # geometry: "x,y WxH"
             x, y = c["at"][0], c["at"][1]
             w, h = c["size"][0], c["size"][1]
             return c["address"], f"{x},{y} {w}x{h}"
@@ -47,7 +50,6 @@ def find_target_linux():
 
 
 def find_target_macos():
-    # Use AppleScript to find windows with the target keyword
     applescript = f'''
     tell application "System Events"
         repeat with proc in (every process whose background only is false)
@@ -64,29 +66,17 @@ def find_target_macos():
         return ""
     end tell
     '''
-    
     try:
         result = run(["osascript", "-e", applescript])
         result = result.strip()
-        
         if not result:
             return None, None
-            
-        # Parse the pipe-separated result
         parts = result.split("|")
         if len(parts) >= 6:
-            app_name = parts[0]
-            window_title = parts[1]
-            x = int(parts[2])
-            y = int(parts[3])
-            w = int(parts[4])
-            h = int(parts[5])
-            
-            # Return app name as identifier and geometry
+            app_name, _, x, y, w, h = parts[:6]
             return app_name, f"{x},{y} {w}x{h}"
     except Exception as e:
         print(f"Error finding target window on macOS: {e}")
-    
     return None, None
 
 
@@ -102,15 +92,11 @@ def focus_window_linux(addr):
 
 
 def focus_window_macos(app_name):
-    # Focus the application using AppleScript
-    applescript = f'''
-    tell application "{app_name}" to activate
-    '''
+    applescript = f'tell application "{app_name}" to activate'
     try:
         sp.run(["osascript", "-e", applescript], check=True)
     except Exception as e:
         print(f"Error focusing window on macOS: {e}")
-        # Fallback: try to activate any application containing the title keyword
         fallback_script = f'''
         tell application "System Events"
             repeat with proc in (every process whose background only is false)
@@ -131,71 +117,86 @@ def focus_window_macos(app_name):
 def snap_once(geom: str) -> Path:
     ts = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     out_path = OUT_DIR / f"messenger_{ts}.png"
-    
     if IS_MACOS:
         snap_once_macos(geom, out_path)
     else:
         snap_once_linux(geom, out_path)
-    
     print(f"Saved screenshot to {out_path}")
-    screenshots = sorted(
-        OUT_DIR.glob("*.png"), key=lambda p: p.stat().st_mtime, reverse=True
-    )
+    screenshots = sorted(OUT_DIR.glob("*.png"), key=lambda p: p.stat().st_mtime, reverse=True)
     for old in screenshots[5:]:
         old.unlink()
     return out_path
 
 
 def snap_once_linux(geom: str, out_path: Path):
-    # grim is non-interactive with -g; avoids hyprshot pipeline
     sp.run(["grim", "-g", geom, str(out_path)], check=True)
 
 
 def snap_once_macos(geom: str, out_path: Path):
-    # Parse geometry "x,y WxH"
     pos_part, size_part = geom.split(" ")
     x, y = map(int, pos_part.split(","))
     w, h = map(int, size_part.split("x"))
-    
-    # Use screencapture with region selection
-    sp.run([
-        "screencapture", 
-        "-R", f"{x},{y},{w},{h}",  # Region: x,y,width,height
-        str(out_path)
-    ], check=True)
+    sp.run(["screencapture", "-R", f"{x},{y},{w},{h}", str(out_path)], check=True)
 
 
-def find_match(img_fromstream: np.ndarray) -> pd.Series | None:
-    offender_name = None
-    for offender_filename in os.listdir(OFFENDER_IMAGES_DIR):
-        offender_image = cv2.imread(
-            os.path.join(OFFENDER_IMAGES_DIR, offender_filename)
-        )
-        if compare(offender_image, img_fromstream) >= COMPARISON_THRESHHOLD:
+def compare_embeddings(embedding1, embedding2) -> float:
+    """Computes cosine similarity between two embeddings."""
+    embedding1 = torch.from_numpy(embedding1)
+    embedding2 = torch.from_numpy(embedding2)
+    similarity = F.cosine_similarity(embedding1.unsqueeze(0), embedding2.unsqueeze(0)).item()
+    return max(0, min(100, similarity * 100))
+
+
+def find_match(
+    img_fromstream: np.ndarray, offender_embeddings: dict[str, np.ndarray], model
+) -> pd.Series | None:
+    """Finds a matching offender from pre-computed embeddings."""
+    device = next(model.parameters()).device
+    with torch.no_grad():
+        live_embedding = model(
+            _tx(cv2.cvtColor(img_fromstream, cv2.COLOR_RGB2BGR))[None].to(device)
+        )[0].cpu().numpy()
+
+    for offender_filename, stored_embedding in offender_embeddings.items():
+        similarity = compare_embeddings(live_embedding, stored_embedding)
+        if similarity >= COMPARISON_THRESHHOLD:
             offender_name = unmake_safe_name(offender_filename)
-            print(f"Found matching offender: {offender_name}")
-            break
-    offender_row = OFFENDER_REGISTRY[OFFENDER_REGISTRY["Name"] == offender_name]
-    if offender_row.empty:
-        print("No match found")
-        return None
-    assert len(offender_row) == 1
-    print(f"Match found: {offender_name}")
-    return offender_row.iloc[0]
+            print(f"Found matching offender: {offender_name} with similarity {similarity:.2f}%")
+            offender_row = OFFENDER_REGISTRY[OFFENDER_REGISTRY["Name"] == offender_name]
+            if not offender_row.empty:
+                return offender_row.iloc[0]
+    print("No match found")
+    return None
 
 
 def main():
     try:
+        if not EMBEDDINGS_PATH.is_file() or EMBEDDINGS_PATH.stat().st_size == 0:
+            print(f"Warning: Offender embeddings not found at '{EMBEDDINGS_PATH}'.")
+            print("Please run 'uv run src/precompute_embeddings.py' to generate them.")
+            offender_embeddings = {}
+        else:
+            with open(EMBEDDINGS_PATH, "rb") as f:
+                offender_embeddings = pickle.load(f)
+            print(f"Loaded {len(offender_embeddings)} offender embeddings.")
+
+        model = get_edge_model("edgeface_s_gamma_05")
+
         while True:
             addr, geom = find_target()
             if geom:
                 focus_window(addr)
-                snap_once(geom)
-                faces = detect_faces(
-                    sorted(OUT_DIR.glob("*.png"), key=os.path.getmtime)[0]
-                )
+                screenshot_path = snap_once(geom)
+                img = cv2.imread(str(screenshot_path))
+                if img is None:
+                    print(f"Failed to load image: {screenshot_path}")
+                    continue
+                faces = detect_faces(img)
+                for i, face in enumerate(faces):
+                    cv2.imshow(f"Face {i+1}", face)
+                    cv2.waitKey(1)
                 for face in faces:
-                    offender = find_match(face)
+                    offender = find_match(face, offender_embeddings, model)
                     if offender is not None:
                         print("Offender details:")
                         print(offender.to_string())
@@ -204,6 +205,8 @@ def main():
             time.sleep(INTERVAL_SEC)
     except KeyboardInterrupt:
         pass
+    finally:
+        cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":

@@ -28,21 +28,23 @@ def _get_face_detector():
     return _FACE_DETECTOR_INSTANCE
 
 
-def detect_faces(image_path: Path) -> list[NDArray]:
+def detect_faces(img_bgr: np.ndarray) -> list[NDArray]:
     detector = _get_face_detector()
     if detector is None:
         return []
-    mp_image = mp.Image.create_from_file(str(image_path))
+    
+    # Convert BGR to RGB for MediaPipe
+    img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img_rgb)
+    
     result = detector.detect(mp_image)
     if not result.detections:
         return []
-    img_bgr = cv2.imread(str(image_path))
-    if img_bgr is None:
-        return []
+    
     h, w, _ = img_bgr.shape
     faces: list[np.ndarray] = []
     for det in result.detections:
-        box = det.bounding_box  # has origin_x, origin_y, width, height
+        box = det.bounding_box
         x1 = max(0, box.origin_x)
         y1 = max(0, box.origin_y)
         x2 = min(w, x1 + box.width)
@@ -64,7 +66,14 @@ if __name__ == "__main__":
     if not img_path.is_file():
         print(f"File not found: {img_path}")
         sys.exit(1)
-    faces = detect_faces(img_path)
+    
+    # Load the image once
+    image_to_process = cv2.imread(str(img_path))
+    if image_to_process is None:
+        print(f"Failed to load image: {img_path}")
+        sys.exit(1)
+        
+    faces = detect_faces(image_to_process)
     print(f"Detected {len(faces)} faces")
     for i, face in enumerate(faces):
         out_path = img_path.parent / f"{img_path.stem}_face_{i + 1}{img_path.suffix}"
