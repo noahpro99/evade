@@ -1,8 +1,8 @@
 import csv
 from pathlib import Path
-import urllib3
 
 import requests
+import urllib3
 
 # Disable SSL warnings when we use verify=False
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -51,9 +51,11 @@ def download_images_if_missing():
                                     resp = requests.get(link, timeout=10, verify=True)
                                 except requests.exceptions.SSLError:
                                     # If SSL verification fails, try without verification
-                                    print(f"SSL verification failed for {link}, trying without verification...")
+                                    print(
+                                        f"SSL verification failed for {link}, trying without verification..."
+                                    )
                                     resp = requests.get(link, timeout=10, verify=False)
-                                
+
                                 if resp.status_code == 200:
                                     with open(filename, "wb") as f:
                                         f.write(resp.content)

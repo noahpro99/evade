@@ -14,14 +14,14 @@ import pandas as pd
 import torch
 from torch.nn import functional as F
 
-from data import OFFENDER_CSV_PATH, OFFENDER_IMAGES_DIR, unmake_safe_name
+from data import OFFENDER_CSV_PATH, unmake_safe_name
 from detection import detect_faces
 from similarity import _tx, get_edge_model
 
 OUT_DIR = Path.cwd() / "data" / "sshots"
 EMBEDDINGS_PATH = Path.cwd() / "models" / "offender_embeddings.pkl"
 TITLE_KEYWORD = "Photo Booth"  # Example keyword to identify target window
-INTERVAL_SEC = 1/ 30
+INTERVAL_SEC = 1 / 30
 COMPARISON_THRESHHOLD = 70.0
 OFFENDER_REGISTRY = pd.read_csv(OFFENDER_CSV_PATH)
 IS_MACOS = platform.system() == "Darwin"
@@ -140,43 +140,43 @@ def snap_once_linux(geom: str) -> np.ndarray | None:
 
 def snap_once_macos(geom: str) -> np.ndarray | None:
     import tempfile
-    
+
     pos_part, size_part = geom.split(" ")
     x, y = map(int, pos_part.split(","))
     w, h = map(int, size_part.split("x"))
-    
+
     # Use a temporary file instead of stdout, as stdout seems to have issues with -R flag
-    with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_file:
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
         temp_path = temp_file.name
-    
+
     try:
         cmd = ["screencapture", "-R", f"{x},{y},{w},{h}", "-o", temp_path]
-        
+
         result = sp.run(cmd, capture_output=True, text=True)
         if result.returncode != 0:
             print(f"ERROR: screencapture failed with return code {result.returncode}")
             print(f"stderr: {result.stderr}")
             return None
-        
+
         # Read the image file
         if not os.path.exists(temp_path):
             print("ERROR: Screenshot file was not created")
             return None
-            
+
         file_size = os.path.getsize(temp_path)
-        
+
         if file_size == 0:
             print("ERROR: Screenshot file is empty")
             return None
-        
+
         # Load the image using OpenCV
         decoded_img = cv2.imread(temp_path)
         if decoded_img is None:
             print("ERROR: Failed to load screenshot image")
             return None
-            
+
         return decoded_img
-        
+
     except Exception as e:
         print(f"Error capturing screenshot on macOS: {e}")
         return None
@@ -190,7 +190,9 @@ def compare_embeddings(embedding1, embedding2) -> float:
     """Computes cosine similarity between two embeddings."""
     embedding1 = torch.from_numpy(embedding1)
     embedding2 = torch.from_numpy(embedding2)
-    similarity = F.cosine_similarity(embedding1.unsqueeze(0), embedding2.unsqueeze(0)).item()
+    similarity = F.cosine_similarity(
+        embedding1.unsqueeze(0), embedding2.unsqueeze(0)
+    ).item()
     return max(0, min(100, similarity * 100))
 
 
@@ -200,15 +202,21 @@ def find_match(
     """Finds a matching offender from pre-computed embeddings."""
     device = next(model.parameters()).device
     with torch.no_grad():
-        live_embedding = model(
-            _tx(cv2.cvtColor(img_fromstream, cv2.COLOR_RGB2BGR))[None].to(device)
-        )[0].cpu().numpy()
+        live_embedding = (
+            model(
+                _tx(cv2.cvtColor(img_fromstream, cv2.COLOR_RGB2BGR))[None].to(device)
+            )[0]
+            .cpu()
+            .numpy()
+        )
 
     for offender_filename, stored_embedding in offender_embeddings.items():
         similarity = compare_embeddings(live_embedding, stored_embedding)
         if similarity >= COMPARISON_THRESHHOLD:
             offender_name = unmake_safe_name(offender_filename)
-            print(f"Found matching offender: {offender_name} with similarity {similarity:.2f}%")
+            print(
+                f"Found matching offender: {offender_name} with similarity {similarity:.2f}%"
+            )
             offender_row = OFFENDER_REGISTRY[OFFENDER_REGISTRY["Name"] == offender_name]
             if not offender_row.empty:
                 return offender_row.iloc[0]
@@ -231,10 +239,10 @@ def main():
 
         print(f"Starting monitoring for windows containing '{TITLE_KEYWORD}'...")
         print("Press Ctrl+C to stop.")
-        
+
         consecutive_failures = 0
         max_consecutive_failures = 10
-        
+
         while True:
             addr, geom = find_target()
             if geom:
@@ -249,7 +257,7 @@ def main():
                     faces = detect_faces(img_data)
                     if faces:
                         for i, face in enumerate(faces):
-                            cv2.imshow(f"Face {i+1}", face)
+                            cv2.imshow(f"Face {i + 1}", face)
                             cv2.waitKey(1)
                         for face in faces:
                             offender = find_match(face, offender_embeddings, model)
@@ -261,13 +269,17 @@ def main():
             else:
                 consecutive_failures += 1
                 if consecutive_failures == 1:
-                    print(f"Could not find window with title containing '{TITLE_KEYWORD}'")
+                    print(
+                        f"Could not find window with title containing '{TITLE_KEYWORD}'"
+                    )
                     print("Make sure the target application is open and visible.")
                 elif consecutive_failures >= max_consecutive_failures:
-                    print(f"Failed to find target window {max_consecutive_failures} times in a row.")
+                    print(
+                        f"Failed to find target window {max_consecutive_failures} times in a row."
+                    )
                     print("Continuing to monitor...")
                     consecutive_failures = 0  # Reset to avoid spam
-                    
+
             time.sleep(INTERVAL_SEC)
     except KeyboardInterrupt:
         pass
