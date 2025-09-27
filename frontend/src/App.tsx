@@ -2,11 +2,9 @@ import { useState } from "react";
 import {
   Home,
   FileText,
-  Eye,
   Phone,
   Shield,
   Heart,
-  CheckCircle,
   MapPin,
   Edit,
   History,
@@ -17,6 +15,7 @@ import {
   Wifi,
   Plus,
   Trash2,
+  Settings,
 } from "lucide-react";
 
 const App = () => {
@@ -31,7 +30,8 @@ const App = () => {
       riskLevel: "High",
       tier: "Tier 3",
       conviction: "Sexual assault (2019)",
-      photo: "👤",
+      photo:
+        "https://www.vspsor.com/api/file/image/019daa4c-b6c9-4f26-aff8-088ae5b1315d",
       timestamp: "2:45 PM - Today",
       location: "Main St & 5th Ave",
     },
@@ -41,7 +41,8 @@ const App = () => {
       riskLevel: "Medium",
       tier: "Tier 2",
       conviction: "Indecent exposure (2020)",
-      photo: "👤",
+      photo:
+        "https://www.vspsor.com/api/file/image/1cca91b7-020e-481d-8f78-e5afbf84bf94",
       timestamp: "11:30 AM - Today",
       location: "Central Park",
     },
@@ -75,34 +76,15 @@ const App = () => {
     },
   ]);
 
-  const LogoComponent = () => (
-    <div className="flex items-center space-x-3">
-      <div className="relative">
-        <div className="w-12 h-12 bg-white/90 rounded-full shadow-sm border border-gray-200/50 flex items-center justify-center">
-          <Eye className="w-6 h-6 text-blue-600" />
-        </div>
-        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-          <CheckCircle className="w-2.5 h-2.5 text-white" />
-        </div>
-      </div>
-      <div>
-        <h1 className="text-2xl font-bold text-gray-800">EVADE</h1>
-        <p className="text-xs text-gray-500 -mt-1">
-          Your trusted safety companion
-        </p>
-      </div>
-    </div>
-  );
-
   const ModeToggle = () => (
-    <div className="bg-white/80 border border-gray-200/60 rounded-full p-1 shadow-sm">
+    <div className="bg-white border border-white rounded-full p-1 shadow-sm">
       <div className="flex relative">
         <button
           onClick={() => setIsAdultMode(true)}
           className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center space-x-2 ${
             isAdultMode
-              ? "bg-blue-500 text-white shadow-sm"
-              : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+              ? "bg-dark text-white shadow-sm"
+              : "text-dark hover:text-dark hover:bg-white"
           }`}
         >
           <Shield className="w-4 h-4" />
@@ -112,8 +94,8 @@ const App = () => {
           onClick={() => setIsAdultMode(false)}
           className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center space-x-2 ${
             !isAdultMode
-              ? "bg-emerald-500 text-white shadow-sm"
-              : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+              ? "bg-dark text-white shadow-sm"
+              : "text-dark hover:text-dark hover:bg-white"
           }`}
         >
           <Heart className="w-4 h-4" />
@@ -127,78 +109,54 @@ const App = () => {
   const DashboardPage = () => (
     <div className="space-y-6">
       {/* Device Status */}
-      <div className="bg-white/70 border border-gray-200/50 rounded-3xl shadow-sm p-6">
+      <div className="bg-white border border-white rounded-3xl shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-800">
-            EVADE Device Status
-          </h2>
+          <h2 className="text-xl font-bold text-dark">EVADE Device Status</h2>
           <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-sm font-medium text-green-700">
-              Connected
-            </span>
+            <div className="w-3 h-3 bg-dark rounded-full animate-pulse"></div>
+            <span className="text-sm font-medium text-dark">Connected</span>
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
-          <div className="bg-blue-50/50 rounded-xl p-4 text-center">
-            <Battery className="w-6 h-6 text-blue-600 mx-auto mb-2" />
-            <div className="text-sm font-medium text-gray-700">Battery</div>
-            <div className="text-lg font-bold text-blue-600">87%</div>
+          <div className="bg-white rounded-xl p-4 text-center">
+            <Battery className="w-6 h-6 text-dark mx-auto mb-2" />
+            <div className="text-sm font-medium text-dark">Battery</div>
+            <div className="text-lg font-bold text-dark">87%</div>
           </div>
-          <div className="bg-green-50/50 rounded-xl p-4 text-center">
-            <Wifi className="w-6 h-6 text-green-600 mx-auto mb-2" />
-            <div className="text-sm font-medium text-gray-700">Connection</div>
-            <div className="text-sm font-bold text-green-600">Strong</div>
+          <div className="bg-white rounded-xl p-4 text-center">
+            <Wifi className="w-6 h-6 text-dark mx-auto mb-2" />
+            <div className="text-sm font-medium text-dark">Connection</div>
+            <div className="text-sm font-bold text-dark">Strong</div>
           </div>
-          <div className="bg-purple-50/50 rounded-xl p-4 text-center">
-            <Camera className="w-6 h-6 text-purple-600 mx-auto mb-2" />
-            <div className="text-sm font-medium text-gray-700">Mode</div>
-            <div className="text-sm font-bold text-purple-600">
+          <div className="bg-white rounded-xl p-4 text-center">
+            <Camera className="w-6 h-6 text-dark mx-auto mb-2" />
+            <div className="text-sm font-medium text-dark">Mode</div>
+            <div className="text-sm font-bold text-dark">
               {isAdultMode ? "Adult" : "Kid"}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Safety Zone Status */}
-      <div className="bg-green-50/70 border border-green-200/60 rounded-3xl shadow-sm p-6">
-        <div className="flex items-center justify-center space-x-3">
-          <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-            <MapPin className="w-6 h-6 text-green-600" />
-          </div>
-          <div className="text-center">
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-              <h3 className="text-lg font-semibold text-green-800">
-                You're in a Safe Zone
-              </h3>
-            </div>
-            <p className="text-sm text-green-600 mt-1">
-              Currently at Home - monitored and secure
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Auto-Call Police Section - Only for Adult Mode */}
       {isAdultMode && (
-        <div className="bg-white/70 border border-gray-200/50 rounded-3xl shadow-sm p-6">
+        <div className="bg-white border border-white rounded-3xl shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-800">Emergency Response</h3>
-            <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+            <h3 className="font-semibold text-dark">Emergency Response</h3>
+            <span className="text-sm text-dark bg-white px-2 py-1 rounded-full">
               Adult Mode
             </span>
           </div>
-          <div className="bg-red-50/50 border border-red-200/30 rounded-xl p-4">
+          <div className="bg-white border border-white rounded-xl p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <Phone className="w-5 h-5 text-red-600" />
+                <Phone className="w-5 h-5 text-dark" />
                 <div>
-                  <span className="text-gray-700 font-medium">
+                  <span className="text-dark font-medium">
                     Auto-Call Police
                   </span>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-dark mt-1">
                     Automatically contact authorities when high-risk offender
                     detected
                   </p>
@@ -212,7 +170,7 @@ const App = () => {
                   })
                 }
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  alertSettings.autoCallPolice ? "bg-red-600" : "bg-gray-200"
+                  alertSettings.autoCallPolice ? "bg-dark" : "bg-white"
                 }`}
               >
                 <span
@@ -225,10 +183,10 @@ const App = () => {
               </button>
             </div>
             {alertSettings.autoCallPolice && (
-              <div className="mt-4 p-3 bg-red-100/50 rounded-lg">
+              <div className="mt-4 p-3 bg-white rounded-lg">
                 <div className="flex items-start space-x-2">
-                  <Shield className="w-4 h-4 text-red-600 mt-0.5" />
-                  <div className="text-sm text-red-700">
+                  <Shield className="w-4 h-4 text-dark mt-0.5" />
+                  <div className="text-sm text-dark">
                     <p className="font-medium">Emergency Protocol Active</p>
                     <p className="mt-1">
                       When a Tier 3 offender is detected, emergency services
@@ -244,14 +202,12 @@ const App = () => {
       )}
 
       {/* Recent Activity */}
-      <div className="bg-white/70 border border-gray-200/50 rounded-3xl shadow-sm p-6">
+      <div className="bg-white border border-white rounded-3xl shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-800">
-            Recent Activity
-          </h3>
+          <h3 className="text-lg font-semibold text-dark">Recent Activity</h3>
           <button
             onClick={() => setActiveTab("history")}
-            className="text-blue-600 text-sm font-medium hover:text-blue-700"
+            className="text-dark text-sm font-medium hover:text-dark"
           >
             View All
           </button>
@@ -261,25 +217,21 @@ const App = () => {
           {detectionHistory.slice(0, 2).map((detection) => (
             <div
               key={detection.id}
-              className="flex items-center space-x-3 p-3 bg-red-50/50 rounded-xl"
+              className="flex items-center space-x-3 p-3 bg-white rounded-xl"
             >
-              <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center text-sm">
-                {detection.photo}
-              </div>
+              <img
+                className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center text-sm"
+                src={detection.photo}
+                alt={detection.name}
+              />
               <div className="flex-1">
-                <div className="font-medium text-gray-800">
-                  {detection.name}
-                </div>
-                <div className="text-sm text-gray-600">
+                <div className="font-medium text-dark">{detection.name}</div>
+                <div className="text-sm text-dark">
                   {detection.riskLevel} Risk • {detection.timestamp}
                 </div>
               </div>
               <div
-                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  detection.riskLevel === "High"
-                    ? "bg-red-100 text-red-700"
-                    : "bg-yellow-100 text-yellow-700"
-                }`}
+                className={`px-2 py-1 rounded-full text-xs font-medium bg-white text-dark`}
               >
                 {detection.tier}
               </div>
@@ -294,52 +246,40 @@ const App = () => {
   const DetectionHistoryPage = () => (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center space-x-2 bg-red-50/60 border border-red-200/50 rounded-full px-4 py-2 mb-4 shadow-sm">
-          <History className="w-4 h-4 text-red-600" />
-          <span className="text-sm font-medium text-red-700">
-            Detection Log
-          </span>
+        <div className="inline-flex items-center space-x-2 bg-white border border-white rounded-full px-4 py-2 mb-4 shadow-sm">
+          <History className="w-4 h-4 text-dark" />
+          <span className="text-sm font-medium text-dark">Detection Log</span>
         </div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          Recent Detections
-        </h2>
-        <p className="text-gray-600">Offenders detected by your EVADE system</p>
+        <h2 className="text-2xl font-bold text-dark mb-2">Recent Detections</h2>
+        <p className="text-dark">Offenders detected by your EVADE system</p>
       </div>
 
       <div className="space-y-4">
         {detectionHistory.map((detection) => (
           <div
             key={detection.id}
-            className="bg-white/70 border border-gray-200/50 rounded-2xl shadow-sm p-6"
+            className="bg-white border border-white rounded-2xl shadow-sm p-6"
           >
             <div className="flex items-start space-x-4">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-2xl">
+              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-2xl">
                 {detection.photo}
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-bold text-gray-800">{detection.name}</h3>
+                  <h3 className="font-bold text-dark">{detection.name}</h3>
                   <div
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      detection.riskLevel === "High"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-yellow-100 text-yellow-700"
-                    }`}
+                    className={`px-3 py-1 rounded-full text-xs font-medium bg-white text-dark`}
                   >
                     {detection.riskLevel} Risk
                   </div>
                 </div>
                 <div className="space-y-1 mb-3">
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-gray-600">
-                      Tier:
-                    </span>
-                    <span className="text-sm text-gray-800">
-                      {detection.tier}
-                    </span>
+                    <span className="text-sm font-medium text-dark">Tier:</span>
+                    <span className="text-sm text-dark">{detection.tier}</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-gray-600">
+                    <span className="text-sm font-medium text-dark">
                       Conviction:
                     </span>
                     <span className="text-sm text-gray-800">
@@ -347,17 +287,17 @@ const App = () => {
                     </span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <MapPin className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm text-gray-600">
+                    <MapPin className="w-4 h-4 text-dark" />
+                    <span className="text-sm text-dark">
                       {detection.location}
                     </span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-dark">
                     {detection.timestamp}
                   </span>
-                  <button className="text-blue-600 text-sm font-medium hover:text-blue-700">
+                  <button className="text-dark text-sm font-medium hover:text-dark">
                     View Details
                   </button>
                 </div>
@@ -373,26 +313,16 @@ const App = () => {
   const AlertSettingsPage = () => (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center space-x-2 bg-blue-50/60 border border-blue-200/50 rounded-full px-4 py-2 mb-4 shadow-sm">
-          <Bell className="w-4 h-4 text-blue-600" />
-          <span className="text-sm font-medium text-blue-700">
-            {isAdultMode ? "Alert Settings" : "Alerts & Contacts"}
-          </span>
-        </div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          {isAdultMode ? "Notification Preferences" : "Safety Settings"}
-        </h2>
-        <p className="text-gray-600">
-          {isAdultMode
-            ? "Customize how you receive safety alerts"
-            : "Manage alerts and emergency contacts"}
-        </p>
+        <h2 className="text-2xl font-bold text-dark mb-2">Settings</h2>
       </div>
 
-      {/* Alert Settings Section */}
+      <div className="flex justify-center mb-8">
+        <ModeToggle />
+      </div>
+
       <div className="space-y-4">
-        <div className="bg-white/70 border border-gray-200/50 rounded-2xl shadow-sm p-6">
-          <h3 className="font-semibold text-gray-800 mb-4">
+        <div className="bg-white border border-white rounded-2xl shadow-sm p-6">
+          <h3 className="font-semibold text-dark mb-4">
             Detection Sensitivity
           </h3>
           <div className="space-y-3">
@@ -405,18 +335,16 @@ const App = () => {
                   onChange={() =>
                     setAlertSettings({ ...alertSettings, sensitivity: level })
                   }
-                  className="w-4 h-4 text-blue-600"
+                  className="w-4 h-4 text-dark"
                 />
-                <span className="text-gray-700">{level}</span>
+                <span className="text-dark">{level}</span>
               </label>
             ))}
           </div>
         </div>
 
-        <div className="bg-white/70 border border-gray-200/50 rounded-2xl shadow-sm p-6">
-          <h3 className="font-semibold text-gray-800 mb-4">
-            Notification Types
-          </h3>
+        <div className="bg-white border border-white rounded-2xl shadow-sm p-6">
+          <h3 className="font-semibold text-dark mb-4">Notification Types</h3>
           <div className="space-y-4">
             {[
               {
@@ -438,8 +366,8 @@ const App = () => {
             ].map(({ key, label, icon: Icon }) => (
               <div key={key} className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <Icon className="w-5 h-5 text-gray-500" />
-                  <span className="text-gray-700">{label}</span>
+                  <Icon className="w-5 h-5 text-dark" />
+                  <span className="text-dark">{label}</span>
                 </div>
                 <button
                   onClick={() =>
@@ -450,8 +378,8 @@ const App = () => {
                   }
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     alertSettings[key as keyof typeof alertSettings]
-                      ? "bg-blue-600"
-                      : "bg-gray-200"
+                      ? "bg-dark"
+                      : "bg-white"
                   }`}
                 >
                   <span
@@ -469,12 +397,10 @@ const App = () => {
 
         {/* Emergency Contacts Section - Only for Kid Mode */}
         {!isAdultMode && (
-          <div className="bg-white/70 border border-gray-200/50 rounded-2xl shadow-sm p-6">
+          <div className="bg-white border border-white rounded-2xl shadow-sm p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="font-semibold text-gray-800">
-                Emergency Contacts
-              </h3>
-              <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+              <h3 className="font-semibold text-dark">Emergency Contacts</h3>
+              <span className="text-sm text-dark bg-white px-2 py-1 rounded-full">
                 Kid Mode
               </span>
             </div>
@@ -483,41 +409,35 @@ const App = () => {
               {emergencyContacts.map((contact) => (
                 <div
                   key={contact.id}
-                  className="bg-purple-50/50 border border-purple-200/30 rounded-xl p-4"
+                  className="bg-white border border-white rounded-xl p-4"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          contact.primary
-                            ? "bg-purple-100 text-purple-600"
-                            : "bg-gray-100 text-gray-600"
-                        }`}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center bg-white text-dark`}
                       >
                         <Users className="w-5 h-5" />
                       </div>
                       <div>
                         <div className="flex items-center space-x-2">
-                          <h4 className="font-medium text-gray-800">
+                          <h4 className="font-medium text-dark">
                             {contact.name}
                           </h4>
                           {contact.primary && (
-                            <span className="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full">
+                            <span className="bg-white text-dark text-xs px-2 py-1 rounded-full">
                               Primary
                             </span>
                           )}
                         </div>
-                        <p className="text-sm text-gray-600">{contact.phone}</p>
-                        <p className="text-xs text-gray-500">
-                          {contact.relation}
-                        </p>
+                        <p className="text-sm text-dark">{contact.phone}</p>
+                        <p className="text-xs text-dark">{contact.relation}</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-1">
-                      <button className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+                      <button className="p-1.5 text-dark hover:text-dark hover:bg-white rounded-lg transition-all">
                         <Edit className="w-3.5 h-3.5" />
                       </button>
-                      <button className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                      <button className="p-1.5 text-dark hover:text-dark hover:bg-white rounded-lg transition-all">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -526,7 +446,7 @@ const App = () => {
               ))}
             </div>
 
-            <button className="w-full bg-purple-50 border-2 border-dashed border-purple-200 rounded-xl p-4 text-purple-600 hover:bg-purple-100 transition-all">
+            <button className="w-full bg-white border-2 border-dashed border-white rounded-xl p-4 text-dark hover:bg-white transition-all">
               <div className="flex items-center justify-center space-x-2">
                 <Plus className="w-4 h-4" />
                 <span className="font-medium">Add Emergency Contact</span>
@@ -552,24 +472,24 @@ const App = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-emerald-50/30 flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       {/* Subtle background pattern */}
       <div className="absolute inset-0 opacity-30">
         <div
           className="absolute inset-0"
           style={{
             backgroundImage:
-              "radial-gradient(circle at 1px 1px, rgba(59, 130, 246, 0.1) 1px, transparent 0)",
+              "radial-gradient(circle at 1px 1px, rgba(55, 69, 69, 0.1) 1px, transparent 0)",
             backgroundSize: "20px 20px",
           }}
         ></div>
       </div>
 
       {/* Header */}
-      <header className="relative bg-white/60 border-b border-gray-200/40 shadow-sm backdrop-blur-sm">
+      <header className="relative bg-white border-b border-white shadow-sm backdrop-blur-sm">
         <div className="max-w-6xl mx-auto flex items-center justify-between p-6">
-          <LogoComponent />
-          <ModeToggle />
+          <img src="/logo.png" alt="EVADE" className="w-12 h-12" />
+          <img src="/name.png" alt="EVADE" className="h-8" />
         </div>
       </header>
 
@@ -579,35 +499,25 @@ const App = () => {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/60 border-t border-gray-200/40 shadow-sm backdrop-blur-sm z-50">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-white shadow-sm backdrop-blur-sm z-50">
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex justify-around py-4">
             {[
               { id: "home", icon: Home, label: "Dashboard" },
               { id: "history", icon: History, label: "Detections" },
-              { id: "alerts", icon: Bell, label: "Alerts" },
+              { id: "alerts", icon: Settings, label: "Settings" },
             ].map(({ id, icon: Icon, label }) => (
               <button
                 key={id}
                 onClick={() => setActiveTab(id)}
                 className={`flex flex-col items-center space-y-2 px-8 py-3 rounded-xl transition-all ${
                   activeTab === id
-                    ? "bg-white/80 shadow-sm border border-gray-200/50"
-                    : "hover:bg-white/40"
+                    ? "bg-white shadow-sm border border-white"
+                    : "hover:bg-white"
                 }`}
               >
-                <Icon
-                  className={`w-5 h-5 ${
-                    activeTab === id ? "text-gray-700" : "text-gray-500"
-                  }`}
-                />
-                <span
-                  className={`text-xs font-medium ${
-                    activeTab === id ? "text-gray-700" : "text-gray-500"
-                  }`}
-                >
-                  {label}
-                </span>
+                <Icon className={`w-5 h-5 text-dark`} />
+                <span className={`text-xs font-medium text-dark`}>{label}</span>
               </button>
             ))}
           </div>
