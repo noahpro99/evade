@@ -10,6 +10,9 @@ sct = mss.mss()
 fps_ts = time.time()
 frames = 0
 
+face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+
+
 while True:
     ret, frame = cap.read()
     if not ret:
