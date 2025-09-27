@@ -20,9 +20,9 @@ from similarity import _tx, get_edge_model
 
 OUT_DIR = Path.cwd() / "data" / "sshots"
 EMBEDDINGS_PATH = Path.cwd() / "models" / "offender_embeddings.pkl"
-TITLE_KEYWORD = "Photo Booth"  # Example keyword to identify target window
+TITLE_KEYWORD = "Messenger call"  # or "Photo Booth"
 INTERVAL_SEC = 1 / 30
-COMPARISON_THRESHHOLD = 70.0
+COMPARISON_THRESHOLD = 70.0
 OFFENDER_REGISTRY = pd.read_csv(OFFENDER_CSV_PATH)
 IS_MACOS = platform.system() == "Darwin"
 
@@ -212,7 +212,7 @@ def find_match(
 
     for offender_filename, stored_embedding in offender_embeddings.items():
         similarity = compare_embeddings(live_embedding, stored_embedding)
-        if similarity >= COMPARISON_THRESHHOLD:
+        if similarity >= COMPARISON_THRESHOLD:
             offender_name = unmake_safe_name(offender_filename)
             print(
                 f"Found matching offender: {offender_name} with similarity {similarity:.2f}%"
