@@ -1,27 +1,12 @@
-import torch
-import torch.nn as nn
-import timm
-import cv2
-from torchvision import transforms
-from face_alignment import align
-from backbones import get_model
-from huggingface_hub import hf_hub_download
 from __future__ import annotations
 
-from pathlib import Path
 import cv2
-import gradio as gr
-import numpy as np
+import timm
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
-from torchvision import transforms
 from huggingface_hub import hf_hub_download
-
-from utils import align_crop
-from title import title_css, title_with_logo
-from timmfrv2 import TimmFRWrapperV2, model_configs
-
-
+from torchvision import transforms
 
 model_configs = {
     "edgeface_base": {
@@ -56,6 +41,7 @@ _tx = transforms.Compose(
         transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
     ]
 )
+
 
 class LoRaLin(nn.Module):
     def __init__(self, in_features, out_features, rank, bias=True):
@@ -109,7 +95,7 @@ class TimmFRWrapperV2(nn.Module):
     def forward(self, x):
         x = self.model(x)
         return x
-    
+
 
 def get_edge_model(name: str) -> torch.nn.Module:
     if name not in get_edge_model.cache:
@@ -139,12 +125,26 @@ def compare(img_left, img_right, variant):
         eb = mdl(_tx(cv2.cvtColor(img_right, cv2.COLOR_RGB2BGR))[None].to(dev))[0]
     pct = float(F.cosine_similarity(ea[None], eb[None]).item() * 100)
     pct = max(0, min(100, pct))
-    return img_left, img_right, pct
+    return pct
 
 
 if __name__ == "__main__":
-    image_path1 = "C:/Users/gideo/Pictures/Saved Pictures/0760dcda-f4c0-42a0-aea3-74f1466b3c9f.jpg"  # Replace with the actual path to your image
+    import os
+
+    # print device
+    print("Using device:", "cuda" if torch.cuda.is_available() else "cpu")
+
+    image_files = [
+        os.path.join("data", "test_images", f)
+        for f in os.listdir(os.path.join("data", "test_images"))
+        if f.endswith(".png")
+    ]
+    image_files = sorted(image_files, key=os.path.getmtime, reverse=True)
+    if len(image_files) < 2:
+        print("Not enough images in data/test_images/")
+        exit(1)
+    image_path1 = image_files[0]
+    image_path2 = image_files[1]
     image_array1 = cv2.imread(image_path1)
-    image_path2 = "C:/Users/gideo/Pictures/Saved Pictures/10e755a9-7558-4a54-b43a-5be417b49817.jpg"  # Replace with the actual path to your image
     image_array2 = cv2.imread(image_path2)
     print(compare(image_array1, image_array2, "edgeface_s_gamma_05"))
