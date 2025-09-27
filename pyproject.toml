@@ -15,3 +15,30 @@ dependencies = [
     "torch>=2.8.0",
     "torchvision>=0.23.0",
 ]
+
+[project.optional-dependencies]
+cpu = ["torch>=2.8.0", "torchvision>=0.23.0"]
+cu129 = ["torch>=2.8.0", "torchvision>=0.23.0"]
+
+[tool.uv]
+conflicts = [[{ extra = "cpu" }, { extra = "cu129" }]]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu", extra = "cpu" },
+    { index = "pytorch-cu129", extra = "cu129" },
+]
+torchvision = [
+    { index = "pytorch-cpu", extra = "cpu" },
+    { index = "pytorch-cu129", extra = "cu129" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu129"
+url = "https://download.pytorch.org/whl/cu129"
+explicit = true

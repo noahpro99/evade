@@ -2,11 +2,23 @@ version = 1
 revision = 2
 requires-python = ">=3.12"
 resolution-markers = [
-    "(python_full_version >= '3.13' and platform_machine != 'aarch64') or (python_full_version >= '3.13' and sys_platform != 'linux')",
-    "(python_full_version < '3.13' and platform_machine != 'aarch64') or (python_full_version < '3.13' and sys_platform != 'linux')",
-    "python_full_version >= '3.13' and platform_machine == 'aarch64' and sys_platform == 'linux'",
-    "python_full_version < '3.13' and platform_machine == 'aarch64' and sys_platform == 'linux'",
+    "(python_full_version >= '3.13' and platform_machine != 'aarch64' and extra != 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (python_full_version >= '3.13' and sys_platform != 'linux' and extra != 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')",
+    "(python_full_version < '3.13' and platform_machine != 'aarch64' and extra != 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (python_full_version < '3.13' and sys_platform != 'linux' and extra != 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')",
+    "python_full_version >= '3.13' and platform_machine == 'aarch64' and sys_platform == 'linux' and extra != 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129'",
+    "python_full_version < '3.13' and platform_machine == 'aarch64' and sys_platform == 'linux' and extra != 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129'",
+    "(python_full_version >= '3.13' and platform_machine != 'aarch64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129') or (python_full_version >= '3.13' and sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129')",
+    "(python_full_version < '3.13' and platform_machine != 'aarch64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129') or (python_full_version < '3.13' and sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129')",
+    "python_full_version >= '3.13' and platform_machine == 'aarch64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129'",
+    "python_full_version < '3.13' and platform_machine == 'aarch64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129'",
+    "python_full_version >= '3.13' and sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129'",
+    "python_full_version < '3.13' and sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129'",
+    "python_full_version >= '3.13' and extra != 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129'",
+    "python_full_version < '3.13' and extra != 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129'",
 ]
+conflicts = [[
+    { package = "vt-hacks-2025", extra = "cpu" },
+    { package = "vt-hacks-2025", extra = "cu129" },
+]]
 
 [[package]]
 name = "absl-py"
@@ -40,7 +52,7 @@ name = "cffi"
 version = "2.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "pycparser", marker = "implementation_name != 'PyPy'" },
+    { name = "pycparser", marker = "implementation_name != 'PyPy' or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/eb/56/b1ba7935a17738ae8453301356628e8147c79dbb825bcbc73dc7401f9846/cffi-2.0.0.tar.gz", hash = "sha256:44d1b5909021139fe36001ae048dbdde8214afa20200eda0f64c068cac5d5529", size = 523588, upload-time = "2025-09-08T23:24:04.541Z" }
 wheels = [
@@ -308,7 +320,7 @@ source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "filelock" },
     { name = "fsspec" },
-    { name = "hf-xet", marker = "platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'arm64' or platform_machine == 'x86_64'" },
+    { name = "hf-xet", marker = "platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'arm64' or platform_machine == 'x86_64' or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
     { name = "packaging" },
     { name = "pyyaml" },
     { name = "requests" },
@@ -674,34 +686,42 @@ wheels = [
 
 [[package]]
 name = "nvidia-cublas-cu12"
-version = "12.8.4.1"
+version = "12.9.1.4"
 source = { registry = "https://pypi.org/simple" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/dc/61/e24b560ab2e2eaeb3c839129175fb330dfcfc29e5203196e5541a4c44682/nvidia_cublas_cu12-12.8.4.1-py3-none-manylinux_2_27_x86_64.whl", hash = "sha256:8ac4e771d5a348c551b2a426eda6193c19aa630236b418086020df5ba9667142", size = 594346921, upload-time = "2025-03-07T01:44:31.254Z" },
+    { url = "https://files.pythonhosted.org/packages/82/6c/90d3f532f608a03a13c1d6c16c266ffa3828e8011b1549d3b61db2ad59f5/nvidia_cublas_cu12-12.9.1.4-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:7a950dae01add3b415a5a5cdc4ec818fb5858263e9cca59004bb99fdbbd3a5d6", size = 575006342, upload-time = "2025-06-05T20:04:16.902Z" },
+    { url = "https://files.pythonhosted.org/packages/77/3c/aa88abe01f3be3d1f8f787d1d33dc83e76fec05945f9a28fbb41cfb99cd5/nvidia_cublas_cu12-12.9.1.4-py3-none-manylinux_2_27_x86_64.whl", hash = "sha256:453611eb21a7c1f2c2156ed9f3a45b691deda0440ec550860290dc901af5b4c2", size = 581242350, upload-time = "2025-06-05T20:04:51.979Z" },
+    { url = "https://files.pythonhosted.org/packages/45/a1/a17fade6567c57452cfc8f967a40d1035bb9301db52f27808167fbb2be2f/nvidia_cublas_cu12-12.9.1.4-py3-none-win_amd64.whl", hash = "sha256:1e5fee10662e6e52bd71dec533fbbd4971bb70a5f24f3bc3793e5c2e9dc640bf", size = 553153899, upload-time = "2025-06-05T20:13:35.556Z" },
 ]
 
 [[package]]
 name = "nvidia-cuda-cupti-cu12"
-version = "12.8.90"
+version = "12.9.79"
 source = { registry = "https://pypi.org/simple" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f8/02/2adcaa145158bf1a8295d83591d22e4103dbfd821bcaf6f3f53151ca4ffa/nvidia_cuda_cupti_cu12-12.8.90-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:ea0cb07ebda26bb9b29ba82cda34849e73c166c18162d3913575b0c9db9a6182", size = 10248621, upload-time = "2025-03-07T01:40:21.213Z" },
+    { url = "https://files.pythonhosted.org/packages/b4/78/351b5c8cdbd9a6b4fb0d6ee73fb176dcdc1b6b6ad47c2ffff5ae8ca4a1f7/nvidia_cuda_cupti_cu12-12.9.79-py3-none-manylinux_2_25_aarch64.whl", hash = "sha256:791853b030602c6a11d08b5578edfb957cadea06e9d3b26adbf8d036135a4afe", size = 10077166, upload-time = "2025-06-05T20:01:01.385Z" },
+    { url = "https://files.pythonhosted.org/packages/c1/2e/b84e32197e33f39907b455b83395a017e697c07a449a2b15fd07fc1c9981/nvidia_cuda_cupti_cu12-12.9.79-py3-none-manylinux_2_25_x86_64.whl", hash = "sha256:096bcf334f13e1984ba36685ad4c1d6347db214de03dbb6eebb237b41d9d934f", size = 10814997, upload-time = "2025-06-05T20:01:10.168Z" },
+    { url = "https://files.pythonhosted.org/packages/3b/b4/298983ab1a83de500f77d0add86d16d63b19d1a82c59f8eaf04f90445703/nvidia_cuda_cupti_cu12-12.9.79-py3-none-win_amd64.whl", hash = "sha256:1848a9380067560d5bee10ed240eecc22991713e672c0515f9c3d9396adf93c8", size = 7730496, upload-time = "2025-06-05T20:11:26.444Z" },
 ]
 
 [[package]]
 name = "nvidia-cuda-nvrtc-cu12"
-version = "12.8.93"
+version = "12.9.86"
 source = { registry = "https://pypi.org/simple" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/05/6b/32f747947df2da6994e999492ab306a903659555dddc0fbdeb9d71f75e52/nvidia_cuda_nvrtc_cu12-12.8.93-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl", hash = "sha256:a7756528852ef889772a84c6cd89d41dfa74667e24cca16bb31f8f061e3e9994", size = 88040029, upload-time = "2025-03-07T01:42:13.562Z" },
+    { url = "https://files.pythonhosted.org/packages/b8/85/e4af82cc9202023862090bfca4ea827d533329e925c758f0cde964cb54b7/nvidia_cuda_nvrtc_cu12-12.9.86-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl", hash = "sha256:210cf05005a447e29214e9ce50851e83fc5f4358df8b453155d5e1918094dcb4", size = 89568129, upload-time = "2025-06-05T20:02:41.973Z" },
+    { url = "https://files.pythonhosted.org/packages/64/eb/c2295044b8f3b3b08860e2f6a912b702fc92568a167259df5dddb78f325e/nvidia_cuda_nvrtc_cu12-12.9.86-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:096d4de6bda726415dfaf3198d4f5c522b8e70139c97feef5cd2ca6d4cd9cead", size = 44528905, upload-time = "2025-06-05T20:02:29.754Z" },
+    { url = "https://files.pythonhosted.org/packages/52/de/823919be3b9d0ccbf1f784035423c5f18f4267fb0123558d58b813c6ec86/nvidia_cuda_nvrtc_cu12-12.9.86-py3-none-win_amd64.whl", hash = "sha256:72972ebdcf504d69462d3bcd67e7b81edd25d0fb85a2c46d3ea3517666636349", size = 76408187, upload-time = "2025-06-05T20:12:27.819Z" },
 ]
 
 [[package]]
 name = "nvidia-cuda-runtime-cu12"
-version = "12.8.90"
+version = "12.9.79"
 source = { registry = "https://pypi.org/simple" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0d/9b/a997b638fcd068ad6e4d53b8551a7d30fe8b404d6f1804abf1df69838932/nvidia_cuda_runtime_cu12-12.8.90-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:adade8dcbd0edf427b7204d480d6066d33902cab2a4707dcfc48a2d0fd44ab90", size = 954765, upload-time = "2025-03-07T01:40:01.615Z" },
+    { url = "https://files.pythonhosted.org/packages/bc/e0/0279bd94539fda525e0c8538db29b72a5a8495b0c12173113471d28bce78/nvidia_cuda_runtime_cu12-12.9.79-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:83469a846206f2a733db0c42e223589ab62fd2fabac4432d2f8802de4bded0a4", size = 3515012, upload-time = "2025-06-05T20:00:35.519Z" },
+    { url = "https://files.pythonhosted.org/packages/bc/46/a92db19b8309581092a3add7e6fceb4c301a3fd233969856a8cbf042cd3c/nvidia_cuda_runtime_cu12-12.9.79-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:25bba2dfb01d48a9b59ca474a1ac43c6ebf7011f1b0b8cc44f54eb6ac48a96c3", size = 3493179, upload-time = "2025-06-05T20:00:53.735Z" },
+    { url = "https://files.pythonhosted.org/packages/59/df/e7c3a360be4f7b93cee39271b792669baeb3846c58a4df6dfcf187a7ffab/nvidia_cuda_runtime_cu12-12.9.79-py3-none-win_amd64.whl", hash = "sha256:8e018af8fa02363876860388bd10ccb89eb9ab8fb0aa749aaf58430a9f7c4891", size = 3591604, upload-time = "2025-06-05T20:11:17.036Z" },
 ]
 
 [[package]]
@@ -709,61 +729,72 @@ name = "nvidia-cudnn-cu12"
 version = "9.10.2.21"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-cublas-cu12", marker = "platform_machine != 'aarch64' or sys_platform != 'linux'" },
+    { name = "nvidia-cublas-cu12", marker = "extra == 'extra-13-vt-hacks-2025-cu129'" },
 ]
 wheels = [
+    { url = "https://files.pythonhosted.org/packages/fa/41/e79269ce215c857c935fd86bcfe91a451a584dfc27f1e068f568b9ad1ab7/nvidia_cudnn_cu12-9.10.2.21-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:c9132cc3f8958447b4910a1720036d9eff5928cc3179b0a51fb6d167c6cc87d8", size = 705026878, upload-time = "2025-06-06T21:52:51.348Z" },
     { url = "https://files.pythonhosted.org/packages/ba/51/e123d997aa098c61d029f76663dedbfb9bc8dcf8c60cbd6adbe42f76d049/nvidia_cudnn_cu12-9.10.2.21-py3-none-manylinux_2_27_x86_64.whl", hash = "sha256:949452be657fa16687d0930933f032835951ef0892b37d2d53824d1a84dc97a8", size = 706758467, upload-time = "2025-06-06T21:54:08.597Z" },
+    { url = "https://files.pythonhosted.org/packages/3d/90/0bd6e586701b3a890fd38aa71c387dab4883d619d6e5ad912ccbd05bfd67/nvidia_cudnn_cu12-9.10.2.21-py3-none-win_amd64.whl", hash = "sha256:c6288de7d63e6cf62988f0923f96dc339cea362decb1bf5b3141883392a7d65e", size = 692992268, upload-time = "2025-06-06T21:55:18.114Z" },
 ]
 
 [[package]]
 name = "nvidia-cufft-cu12"
-version = "11.3.3.83"
+version = "11.4.1.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-nvjitlink-cu12", marker = "platform_machine != 'aarch64' or sys_platform != 'linux'" },
+    { name = "nvidia-nvjitlink-cu12", marker = "extra == 'extra-13-vt-hacks-2025-cu129'" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1f/13/ee4e00f30e676b66ae65b4f08cb5bcbb8392c03f54f2d5413ea99a5d1c80/nvidia_cufft_cu12-11.3.3.83-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:4d2dd21ec0b88cf61b62e6b43564355e5222e4a3fb394cac0db101f2dd0d4f74", size = 193118695, upload-time = "2025-03-07T01:45:27.821Z" },
+    { url = "https://files.pythonhosted.org/packages/9b/2b/76445b0af890da61b501fde30650a1a4bd910607261b209cccb5235d3daa/nvidia_cufft_cu12-11.4.1.4-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:1a28c9b12260a1aa7a8fd12f5ebd82d027963d635ba82ff39a1acfa7c4c0fbcf", size = 200822453, upload-time = "2025-06-05T20:05:27.889Z" },
+    { url = "https://files.pythonhosted.org/packages/95/f4/61e6996dd20481ee834f57a8e9dca28b1869366a135e0d42e2aa8493bdd4/nvidia_cufft_cu12-11.4.1.4-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:c67884f2a7d276b4b80eb56a79322a95df592ae5e765cf1243693365ccab4e28", size = 200877592, upload-time = "2025-06-05T20:05:45.862Z" },
+    { url = "https://files.pythonhosted.org/packages/20/ee/29955203338515b940bd4f60ffdbc073428f25ef9bfbce44c9a066aedc5c/nvidia_cufft_cu12-11.4.1.4-py3-none-win_amd64.whl", hash = "sha256:8e5bfaac795e93f80611f807d42844e8e27e340e0cde270dcb6c65386d795b80", size = 200067309, upload-time = "2025-06-05T20:13:59.762Z" },
 ]
 
 [[package]]
 name = "nvidia-cufile-cu12"
-version = "1.13.1.3"
+version = "1.14.1.1"
 source = { registry = "https://pypi.org/simple" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bb/fe/1bcba1dfbfb8d01be8d93f07bfc502c93fa23afa6fd5ab3fc7c1df71038a/nvidia_cufile_cu12-1.13.1.3-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:1d069003be650e131b21c932ec3d8969c1715379251f8d23a1860554b1cb24fc", size = 1197834, upload-time = "2025-03-07T01:45:50.723Z" },
+    { url = "https://files.pythonhosted.org/packages/ad/28/b960e06d705a440c030edd84e16888ee14c743390bdb2a6368e92ffe8ef8/nvidia_cufile_cu12-1.14.1.1-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:9552e2231792e94b1ff17bc99e958cc0e6bbbaa4a9d91fa2dbeed97716628fe6", size = 1210714, upload-time = "2025-06-05T20:06:11.898Z" },
+    { url = "https://files.pythonhosted.org/packages/b9/d2/110af3a1f77999d5eebf6ffae5d2305ab839e53c76eec3696640cc25b35d/nvidia_cufile_cu12-1.14.1.1-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:8dea77590761e02cb6dd955a57cb6414c58aa3cb1b7adbf9919869a11509cf65", size = 1135994, upload-time = "2025-06-05T20:06:03.952Z" },
 ]
 
 [[package]]
 name = "nvidia-curand-cu12"
-version = "10.3.9.90"
+version = "10.3.10.19"
 source = { registry = "https://pypi.org/simple" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fb/aa/6584b56dc84ebe9cf93226a5cde4d99080c8e90ab40f0c27bda7a0f29aa1/nvidia_curand_cu12-10.3.9.90-py3-none-manylinux_2_27_x86_64.whl", hash = "sha256:b32331d4f4df5d6eefa0554c565b626c7216f87a06a4f56fab27c3b68a830ec9", size = 63619976, upload-time = "2025-03-07T01:46:23.323Z" },
+    { url = "https://files.pythonhosted.org/packages/14/1c/2a45afc614d99558d4a773fa740d8bb5471c8398eeed925fc0fcba020173/nvidia_curand_cu12-10.3.10.19-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:de663377feb1697e1d30ed587b07d5721fdd6d2015c738d7528a6002a6134d37", size = 68292066, upload-time = "2025-05-01T19:39:13.595Z" },
+    { url = "https://files.pythonhosted.org/packages/31/44/193a0e171750ca9f8320626e8a1f2381e4077a65e69e2fb9708bd479e34a/nvidia_curand_cu12-10.3.10.19-py3-none-manylinux_2_27_x86_64.whl", hash = "sha256:49b274db4780d421bd2ccd362e1415c13887c53c214f0d4b761752b8f9f6aa1e", size = 68295626, upload-time = "2025-05-01T19:39:38.885Z" },
+    { url = "https://files.pythonhosted.org/packages/e5/98/1bd66fd09cbe1a5920cb36ba87029d511db7cca93979e635fd431ad3b6c0/nvidia_curand_cu12-10.3.10.19-py3-none-win_amd64.whl", hash = "sha256:e8129e6ac40dc123bd948e33d3e11b4aa617d87a583fa2f21b3210e90c743cde", size = 68774847, upload-time = "2025-05-01T19:48:52.93Z" },
 ]
 
 [[package]]
 name = "nvidia-cusolver-cu12"
-version = "11.7.3.90"
+version = "11.7.5.82"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-cublas-cu12", marker = "platform_machine != 'aarch64' or sys_platform != 'linux'" },
-    { name = "nvidia-cusparse-cu12", marker = "platform_machine != 'aarch64' or sys_platform != 'linux'" },
-    { name = "nvidia-nvjitlink-cu12", marker = "platform_machine != 'aarch64' or sys_platform != 'linux'" },
+    { name = "nvidia-cublas-cu12", marker = "extra == 'extra-13-vt-hacks-2025-cu129'" },
+    { name = "nvidia-cusparse-cu12", marker = "extra == 'extra-13-vt-hacks-2025-cu129'" },
+    { name = "nvidia-nvjitlink-cu12", marker = "extra == 'extra-13-vt-hacks-2025-cu129'" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/85/48/9a13d2975803e8cf2777d5ed57b87a0b6ca2cc795f9a4f59796a910bfb80/nvidia_cusolver_cu12-11.7.3.90-py3-none-manylinux_2_27_x86_64.whl", hash = "sha256:4376c11ad263152bd50ea295c05370360776f8c3427b30991df774f9fb26c450", size = 267506905, upload-time = "2025-03-07T01:47:16.273Z" },
+    { url = "https://files.pythonhosted.org/packages/03/99/686ff9bf3a82a531c62b1a5c614476e8dfa24a9d89067aeedf3592ee4538/nvidia_cusolver_cu12-11.7.5.82-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:62efa83e4ace59a4c734d052bb72158e888aa7b770e1a5f601682f16fe5b4fd2", size = 337869834, upload-time = "2025-06-05T20:06:53.125Z" },
+    { url = "https://files.pythonhosted.org/packages/33/40/79b0c64d44d6c166c0964ec1d803d067f4a145cca23e23925fd351d0e642/nvidia_cusolver_cu12-11.7.5.82-py3-none-manylinux_2_27_x86_64.whl", hash = "sha256:15da72d1340d29b5b3cf3fd100e3cd53421dde36002eda6ed93811af63c40d88", size = 338117415, upload-time = "2025-06-05T20:07:16.809Z" },
+    { url = "https://files.pythonhosted.org/packages/32/5d/feb7f86b809f89b14193beffebe24cf2e4bf7af08372ab8cdd34d19a65a0/nvidia_cusolver_cu12-11.7.5.82-py3-none-win_amd64.whl", hash = "sha256:77666337237716783c6269a658dea310195cddbd80a5b2919b1ba8735cec8efd", size = 326215953, upload-time = "2025-06-05T20:14:41.76Z" },
 ]
 
 [[package]]
 name = "nvidia-cusparse-cu12"
-version = "12.5.8.93"
+version = "12.5.10.65"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-nvjitlink-cu12", marker = "platform_machine != 'aarch64' or sys_platform != 'linux'" },
+    { name = "nvidia-nvjitlink-cu12", marker = "extra == 'extra-13-vt-hacks-2025-cu129'" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c2/f5/e1854cb2f2bcd4280c44736c93550cc300ff4b8c95ebe370d0aa7d2b473d/nvidia_cusparse_cu12-12.5.8.93-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:1ec05d76bbbd8b61b06a80e1eaf8cf4959c3d4ce8e711b65ebd0443bb0ebb13b", size = 288216466, upload-time = "2025-03-07T01:48:13.779Z" },
+    { url = "https://files.pythonhosted.org/packages/5e/6f/8710fbd17cdd1d0fc3fea7d36d5b65ce1933611c31e1861da330206b253a/nvidia_cusparse_cu12-12.5.10.65-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:221c73e7482dd93eda44e65ce567c031c07e2f93f6fa0ecd3ba876a195023e83", size = 366359408, upload-time = "2025-06-05T20:07:42.501Z" },
+    { url = "https://files.pythonhosted.org/packages/12/46/b0fd4b04f86577921feb97d8e2cf028afe04f614d17fb5013de9282c9216/nvidia_cusparse_cu12-12.5.10.65-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:73060ce019ac064a057267c585bf1fd5a353734151f87472ff02b2c5c9984e78", size = 366465088, upload-time = "2025-06-05T20:08:20.413Z" },
+    { url = "https://files.pythonhosted.org/packages/73/ef/063500c25670fbd1cbb0cd3eb7c8a061585b53adb4dd8bf3492bb49b0df3/nvidia_cusparse_cu12-12.5.10.65-py3-none-win_amd64.whl", hash = "sha256:9e487468a22a1eaf1fbd1d2035936a905feb79c4ce5c2f67626764ee4f90227c", size = 362504719, upload-time = "2025-06-05T20:15:17.947Z" },
 ]
 
 [[package]]
@@ -771,7 +802,9 @@ name = "nvidia-cusparselt-cu12"
 version = "0.7.1"
 source = { registry = "https://pypi.org/simple" }
 wheels = [
+    { url = "https://files.pythonhosted.org/packages/73/b9/598f6ff36faaece4b3c50d26f50e38661499ff34346f00e057760b35cc9d/nvidia_cusparselt_cu12-0.7.1-py3-none-manylinux2014_aarch64.whl", hash = "sha256:8878dce784d0fac90131b6817b607e803c36e629ba34dc5b433471382196b6a5", size = 283835557, upload-time = "2025-02-26T00:16:54.265Z" },
     { url = "https://files.pythonhosted.org/packages/56/79/12978b96bd44274fe38b5dde5cfb660b1d114f70a65ef962bcbbed99b549/nvidia_cusparselt_cu12-0.7.1-py3-none-manylinux2014_x86_64.whl", hash = "sha256:f1bb701d6b930d5a7cea44c19ceb973311500847f81b634d802b7b539dc55623", size = 287193691, upload-time = "2025-02-26T00:15:44.104Z" },
+    { url = "https://files.pythonhosted.org/packages/2f/d8/a6b0d0d0c2435e9310f3e2bb0d9c9dd4c33daef86aa5f30b3681defd37ea/nvidia_cusparselt_cu12-0.7.1-py3-none-win_amd64.whl", hash = "sha256:f67fbb5831940ec829c9117b7f33807db9f9678dc2a617fbe781cac17b4e1075", size = 271020911, upload-time = "2025-02-26T00:14:47.204Z" },
 ]
 
 [[package]]
@@ -779,23 +812,28 @@ name = "nvidia-nccl-cu12"
 version = "2.27.3"
 source = { registry = "https://pypi.org/simple" }
 wheels = [
+    { url = "https://files.pythonhosted.org/packages/4b/7b/8354b784cf73b0ba51e566b4baba3ddd44fe8288a3d39ef1e06cd5417226/nvidia_nccl_cu12-2.27.3-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:9ddf1a245abc36c550870f26d537a9b6087fb2e2e3d6e0ef03374c6fd19d984f", size = 322397768, upload-time = "2025-06-03T21:57:30.234Z" },
     { url = "https://files.pythonhosted.org/packages/5c/5b/4e4fff7bad39adf89f735f2bc87248c81db71205b62bcc0d5ca5b606b3c3/nvidia_nccl_cu12-2.27.3-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:adf27ccf4238253e0b826bce3ff5fa532d65fc42322c8bfdfaf28024c0fbe039", size = 322364134, upload-time = "2025-06-03T21:58:04.013Z" },
 ]
 
 [[package]]
 name = "nvidia-nvjitlink-cu12"
-version = "12.8.93"
+version = "12.9.86"
 source = { registry = "https://pypi.org/simple" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f6/74/86a07f1d0f42998ca31312f998bd3b9a7eff7f52378f4f270c8679c77fb9/nvidia_nvjitlink_cu12-12.8.93-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl", hash = "sha256:81ff63371a7ebd6e6451970684f916be2eab07321b73c9d244dc2b4da7f73b88", size = 39254836, upload-time = "2025-03-07T01:49:55.661Z" },
+    { url = "https://files.pythonhosted.org/packages/46/0c/c75bbfb967457a0b7670b8ad267bfc4fffdf341c074e0a80db06c24ccfd4/nvidia_nvjitlink_cu12-12.9.86-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl", hash = "sha256:e3f1171dbdc83c5932a45f0f4c99180a70de9bd2718c1ab77d14104f6d7147f9", size = 39748338, upload-time = "2025-06-05T20:10:25.613Z" },
+    { url = "https://files.pythonhosted.org/packages/97/bc/2dcba8e70cf3115b400fef54f213bcd6715a3195eba000f8330f11e40c45/nvidia_nvjitlink_cu12-12.9.86-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:994a05ef08ef4b0b299829cde613a424382aff7efb08a7172c1fa616cc3af2ca", size = 39514880, upload-time = "2025-06-05T20:10:04.89Z" },
+    { url = "https://files.pythonhosted.org/packages/dd/7e/2eecb277d8a98184d881fb98a738363fd4f14577a4d2d7f8264266e82623/nvidia_nvjitlink_cu12-12.9.86-py3-none-win_amd64.whl", hash = "sha256:cc6fcec260ca843c10e34c936921a1c426b351753587fdd638e8cff7b16bb9db", size = 35584936, upload-time = "2025-06-05T20:16:08.525Z" },
 ]
 
 [[package]]
 name = "nvidia-nvtx-cu12"
-version = "12.8.90"
+version = "12.9.79"
 source = { registry = "https://pypi.org/simple" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a2/eb/86626c1bbc2edb86323022371c39aa48df6fd8b0a1647bc274577f72e90b/nvidia_nvtx_cu12-12.8.90-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:5b17e2001cc0d751a5bc2c6ec6d26ad95913324a4adb86788c944f8ce9ba441f", size = 89954, upload-time = "2025-03-07T01:42:44.131Z" },
+    { url = "https://files.pythonhosted.org/packages/86/ed/bb230dce7741f2778ba2ae3e8778fdb8bc58eee9fd95f07bf7b2d18e8081/nvidia_nvtx_cu12-12.9.79-py3-none-manylinux1_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:fec150986817f2b4e7eed72ed059f2dcb9ba3856b9a96134e448eac946a6952f", size = 85504, upload-time = "2025-06-05T20:03:10.21Z" },
+    { url = "https://files.pythonhosted.org/packages/c4/e4/82155e4aaedb41621087ba219c95e99c5e417f37a7649b4fb6ec32dcb14d/nvidia_nvtx_cu12-12.9.79-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:d1f258e752294acdb4f61c3d31fee87bd0f60e459f1e2f624376369b524cd15d", size = 86120, upload-time = "2025-06-05T20:02:51.838Z" },
+    { url = "https://files.pythonhosted.org/packages/9a/cc/efd28e4b3f4019f7ef176f4baa5c1ef7dcd3ac8c9e6d2b15bcbf3f1297d3/nvidia_nvtx_cu12-12.9.79-py3-none-win_amd64.whl", hash = "sha256:1f504e573b3a955e55aae6c747e2ae561b63fdcafcd591e43d18dae9875504f8", size = 77774, upload-time = "2025-06-05T20:12:39.44Z" },
 ]
 
 [[package]]
@@ -1215,8 +1253,15 @@ dependencies = [
     { name = "huggingface-hub" },
     { name = "pyyaml" },
     { name = "safetensors" },
-    { name = "torch" },
-    { name = "torchvision" },
+    { name = "torch", version = "2.8.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torch", version = "2.8.0", source = { registry = "https://pypi.org/simple" }, marker = "(extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (extra != 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torch", version = "2.8.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform != 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torch", version = "2.8.0+cu129", source = { registry = "https://download.pytorch.org/whl/cu129" }, marker = "extra == 'extra-13-vt-hacks-2025-cu129'" },
+    { name = "torchvision", version = "0.23.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cpu') or (platform_machine != 'aarch64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torchvision", version = "0.23.0", source = { registry = "https://download.pytorch.org/whl/cu129" }, marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (platform_machine != 'aarch64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torchvision", version = "0.23.0", source = { registry = "https://pypi.org/simple" }, marker = "(extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (extra != 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torchvision", version = "0.23.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(platform_machine != 'aarch64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cpu') or (sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu') or (sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torchvision", version = "0.23.0+cu129", source = { registry = "https://download.pytorch.org/whl/cu129" }, marker = "(platform_machine != 'aarch64' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/b5/ba/6f5d96622a4a9fc315da53f58b3ca224c66015efe40aa191df0d523ede7c/timm-1.0.20.tar.gz", hash = "sha256:7468d32a410c359181c1ef961f49c7e213286e0c342bfb898b99534a4221fc54", size = 2360052, upload-time = "2025-09-21T17:26:35.492Z" }
 wheels = [
@@ -1226,30 +1271,42 @@ wheels = [
 [[package]]
 name = "torch"
 version = "2.8.0"
-source = { registry = "https://pypi.org/simple" }
+source = { registry = "https://download.pytorch.org/whl/cpu" }
+resolution-markers = [
+    "python_full_version >= '3.13' and sys_platform == 'darwin'",
+    "python_full_version < '3.13' and sys_platform == 'darwin'",
+]
 dependencies = [
-    { name = "filelock" },
-    { name = "fsspec" },
-    { name = "jinja2" },
-    { name = "networkx" },
-    { name = "nvidia-cublas-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-cuda-cupti-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-cuda-nvrtc-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-cuda-runtime-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-cudnn-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-cufft-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-cufile-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-curand-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-cusolver-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-cusparse-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-cusparselt-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-nccl-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-nvjitlink-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "nvidia-nvtx-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "setuptools" },
-    { name = "sympy" },
-    { name = "triton", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
-    { name = "typing-extensions" },
+    { name = "filelock", marker = "(sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "fsspec", marker = "(sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "jinja2", marker = "(sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "networkx", marker = "(sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "setuptools", marker = "(sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "sympy", marker = "(sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "typing-extensions", marker = "(sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+]
+wheels = [
+    { url = "https://download.pytorch.org/whl/cpu/torch-2.8.0-cp312-none-macosx_11_0_arm64.whl" },
+    { url = "https://download.pytorch.org/whl/cpu/torch-2.8.0-cp313-cp313t-macosx_14_0_arm64.whl" },
+    { url = "https://download.pytorch.org/whl/cpu/torch-2.8.0-cp313-none-macosx_11_0_arm64.whl" },
+]
+
+[[package]]
+name = "torch"
+version = "2.8.0"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.13'",
+    "python_full_version < '3.13'",
+]
+dependencies = [
+    { name = "filelock", marker = "(extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (extra != 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "fsspec", marker = "(extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (extra != 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "jinja2", marker = "(extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (extra != 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "networkx", marker = "(extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (extra != 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "setuptools", marker = "(extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (extra != 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "sympy", marker = "(extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (extra != 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "typing-extensions", marker = "(extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (extra != 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/49/0c/2fd4df0d83a495bb5e54dca4474c4ec5f9c62db185421563deeb5dabf609/torch-2.8.0-cp312-cp312-manylinux_2_28_aarch64.whl", hash = "sha256:e2fab4153768d433f8ed9279c8133a114a034a61e77a3a104dcdf54388838705", size = 101906089, upload-time = "2025-08-06T14:53:52.631Z" },
@@ -1267,13 +1324,142 @@ wheels = [
 ]
 
 [[package]]
+name = "torch"
+version = "2.8.0+cpu"
+source = { registry = "https://download.pytorch.org/whl/cpu" }
+resolution-markers = [
+    "(python_full_version >= '3.13' and platform_machine != 'aarch64' and sys_platform == 'linux') or (python_full_version >= '3.13' and sys_platform != 'darwin' and sys_platform != 'linux')",
+    "(python_full_version < '3.13' and platform_machine != 'aarch64' and sys_platform == 'linux') or (python_full_version < '3.13' and sys_platform != 'darwin' and sys_platform != 'linux')",
+    "python_full_version >= '3.13' and platform_machine == 'aarch64' and sys_platform == 'linux'",
+    "python_full_version < '3.13' and platform_machine == 'aarch64' and sys_platform == 'linux'",
+]
+dependencies = [
+    { name = "filelock", marker = "(sys_platform != 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "fsspec", marker = "(sys_platform != 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "jinja2", marker = "(sys_platform != 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "networkx", marker = "(sys_platform != 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "setuptools", marker = "(sys_platform != 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "sympy", marker = "(sys_platform != 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "typing-extensions", marker = "(sys_platform != 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+]
+wheels = [
+    { url = "https://download.pytorch.org/whl/cpu/torch-2.8.0%2Bcpu-cp312-cp312-linux_s390x.whl" },
+    { url = "https://download.pytorch.org/whl/cpu/torch-2.8.0%2Bcpu-cp312-cp312-manylinux_2_28_aarch64.whl" },
+    { url = "https://download.pytorch.org/whl/cpu/torch-2.8.0%2Bcpu-cp312-cp312-manylinux_2_28_x86_64.whl" },
+    { url = "https://download.pytorch.org/whl/cpu/torch-2.8.0%2Bcpu-cp312-cp312-win_amd64.whl" },
+    { url = "https://download.pytorch.org/whl/cpu/torch-2.8.0%2Bcpu-cp312-cp312-win_arm64.whl" },
+    { url = "https://download.pytorch.org/whl/cpu/torch-2.8.0%2Bcpu-cp313-cp313-linux_s390x.whl" },
+    { url = "https://download.pytorch.org/whl/cpu/torch-2.8.0%2Bcpu-cp313-cp313-manylinux_2_28_aarch64.whl" },
+    { url = "https://download.pytorch.org/whl/cpu/torch-2.8.0%2Bcpu-cp313-cp313-manylinux_2_28_x86_64.whl" },
+    { url = "https://download.pytorch.org/whl/cpu/torch-2.8.0%2Bcpu-cp313-cp313-win_amd64.whl" },
+    { url = "https://download.pytorch.org/whl/cpu/torch-2.8.0%2Bcpu-cp313-cp313-win_arm64.whl" },
+    { url = "https://download.pytorch.org/whl/cpu/torch-2.8.0%2Bcpu-cp313-cp313t-manylinux_2_28_aarch64.whl" },
+    { url = "https://download.pytorch.org/whl/cpu/torch-2.8.0%2Bcpu-cp313-cp313t-manylinux_2_28_x86_64.whl" },
+    { url = "https://download.pytorch.org/whl/cpu/torch-2.8.0%2Bcpu-cp313-cp313t-win_amd64.whl" },
+]
+
+[[package]]
+name = "torch"
+version = "2.8.0+cu129"
+source = { registry = "https://download.pytorch.org/whl/cu129" }
+resolution-markers = [
+    "(python_full_version >= '3.13' and platform_machine != 'aarch64') or (python_full_version >= '3.13' and sys_platform != 'linux')",
+    "(python_full_version < '3.13' and platform_machine != 'aarch64') or (python_full_version < '3.13' and sys_platform != 'linux')",
+    "python_full_version >= '3.13' and platform_machine == 'aarch64' and sys_platform == 'linux'",
+    "python_full_version < '3.13' and platform_machine == 'aarch64' and sys_platform == 'linux'",
+]
+dependencies = [
+    { name = "filelock", marker = "extra == 'extra-13-vt-hacks-2025-cu129'" },
+    { name = "fsspec", marker = "extra == 'extra-13-vt-hacks-2025-cu129'" },
+    { name = "jinja2", marker = "extra == 'extra-13-vt-hacks-2025-cu129'" },
+    { name = "networkx", marker = "extra == 'extra-13-vt-hacks-2025-cu129'" },
+    { name = "nvidia-cublas-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (platform_machine != 'x86_64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "nvidia-cuda-cupti-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (platform_machine != 'x86_64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "nvidia-cuda-nvrtc-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (platform_machine != 'x86_64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "nvidia-cuda-runtime-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (platform_machine != 'x86_64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "nvidia-cudnn-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (platform_machine != 'x86_64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "nvidia-cufft-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (platform_machine != 'x86_64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "nvidia-cufile-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (platform_machine != 'x86_64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "nvidia-curand-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (platform_machine != 'x86_64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "nvidia-cusolver-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (platform_machine != 'x86_64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "nvidia-cusparse-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (platform_machine != 'x86_64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "nvidia-cusparselt-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (platform_machine != 'x86_64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "nvidia-nccl-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (platform_machine != 'x86_64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "nvidia-nvjitlink-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (platform_machine != 'x86_64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "nvidia-nvtx-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (platform_machine != 'x86_64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "setuptools", marker = "extra == 'extra-13-vt-hacks-2025-cu129'" },
+    { name = "sympy", marker = "extra == 'extra-13-vt-hacks-2025-cu129'" },
+    { name = "triton", marker = "(sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "typing-extensions", marker = "extra == 'extra-13-vt-hacks-2025-cu129'" },
+]
+wheels = [
+    { url = "https://download.pytorch.org/whl/cu129/torch-2.8.0%2Bcu129-cp312-cp312-manylinux_2_28_aarch64.whl" },
+    { url = "https://download.pytorch.org/whl/cu129/torch-2.8.0%2Bcu129-cp312-cp312-manylinux_2_28_x86_64.whl" },
+    { url = "https://download.pytorch.org/whl/cu129/torch-2.8.0%2Bcu129-cp312-cp312-win_amd64.whl" },
+    { url = "https://download.pytorch.org/whl/cu129/torch-2.8.0%2Bcu129-cp313-cp313-manylinux_2_28_aarch64.whl" },
+    { url = "https://download.pytorch.org/whl/cu129/torch-2.8.0%2Bcu129-cp313-cp313-manylinux_2_28_x86_64.whl" },
+    { url = "https://download.pytorch.org/whl/cu129/torch-2.8.0%2Bcu129-cp313-cp313-win_amd64.whl" },
+    { url = "https://download.pytorch.org/whl/cu129/torch-2.8.0%2Bcu129-cp313-cp313t-manylinux_2_28_aarch64.whl" },
+    { url = "https://download.pytorch.org/whl/cu129/torch-2.8.0%2Bcu129-cp313-cp313t-manylinux_2_28_x86_64.whl" },
+    { url = "https://download.pytorch.org/whl/cu129/torch-2.8.0%2Bcu129-cp313-cp313t-win_amd64.whl" },
+]
+
+[[package]]
+name = "torchvision"
+version = "0.23.0"
+source = { registry = "https://download.pytorch.org/whl/cpu" }
+resolution-markers = [
+    "python_full_version >= '3.13' and platform_machine == 'aarch64' and sys_platform == 'linux'",
+    "python_full_version < '3.13' and platform_machine == 'aarch64' and sys_platform == 'linux'",
+    "python_full_version >= '3.13' and sys_platform == 'darwin'",
+    "python_full_version < '3.13' and sys_platform == 'darwin'",
+]
+dependencies = [
+    { name = "numpy", marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cpu') or (platform_machine != 'aarch64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "pillow", marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cpu') or (platform_machine != 'aarch64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torch", version = "2.8.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torch", version = "2.8.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cpu') or (platform_machine != 'aarch64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+]
+wheels = [
+    { url = "https://download.pytorch.org/whl/cpu/torchvision-0.23.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:e0e2c04a91403e8dd3af9756c6a024a1d9c0ed9c0d592a8314ded8f4fe30d440" },
+    { url = "https://download.pytorch.org/whl/cpu/torchvision-0.23.0-cp312-cp312-manylinux_2_28_aarch64.whl", hash = "sha256:6dd7c4d329a0e03157803031bc856220c6155ef08c26d4f5bbac938acecf0948" },
+    { url = "https://download.pytorch.org/whl/cpu/torchvision-0.23.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:1c37e325e09a184b730c3ef51424f383ec5745378dc0eca244520aca29722600" },
+    { url = "https://download.pytorch.org/whl/cpu/torchvision-0.23.0-cp313-cp313-manylinux_2_28_aarch64.whl", hash = "sha256:2f7fd6c15f3697e80627b77934f77705f3bc0e98278b989b2655de01f6903e1d" },
+    { url = "https://download.pytorch.org/whl/cpu/torchvision-0.23.0-cp313-cp313t-macosx_11_0_arm64.whl", hash = "sha256:2df618e1143805a7673aaf82cb5720dd9112d4e771983156aaf2ffff692eebf9" },
+    { url = "https://download.pytorch.org/whl/cpu/torchvision-0.23.0-cp313-cp313t-manylinux_2_28_aarch64.whl", hash = "sha256:2a3299d2b1d5a7aed2d3b6ffb69c672ca8830671967eb1cee1497bacd82fe47b" },
+]
+
+[[package]]
+name = "torchvision"
+version = "0.23.0"
+source = { registry = "https://download.pytorch.org/whl/cu129" }
+resolution-markers = [
+    "python_full_version >= '3.13' and platform_machine == 'aarch64' and sys_platform == 'linux'",
+    "python_full_version < '3.13' and platform_machine == 'aarch64' and sys_platform == 'linux'",
+]
+dependencies = [
+    { name = "numpy", marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (platform_machine != 'aarch64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "pillow", marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (platform_machine != 'aarch64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torch", version = "2.8.0+cu129", source = { registry = "https://download.pytorch.org/whl/cu129" }, marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (platform_machine != 'aarch64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+]
+wheels = [
+    { url = "https://download.pytorch.org/whl/cu129/torchvision-0.23.0-cp312-cp312-manylinux_2_28_aarch64.whl", hash = "sha256:630f602db2c594c9cbc89b964d5fb4873adf4193805df65339b24cd3f4cf57f7" },
+    { url = "https://download.pytorch.org/whl/cu129/torchvision-0.23.0-cp313-cp313-manylinux_2_28_aarch64.whl", hash = "sha256:20f7e25a24f91d93d09398b80929dec805c4ee2f5527fad8eecd6e43dc5fd5d0" },
+    { url = "https://download.pytorch.org/whl/cu129/torchvision-0.23.0-cp313-cp313t-manylinux_2_28_aarch64.whl", hash = "sha256:cb70cc000e6a398270044c3406a89ee8ab6157a4e81b5d40c5904e1d0e22e2f8" },
+]
+
+[[package]]
 name = "torchvision"
 version = "0.23.0"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.13'",
+    "python_full_version < '3.13'",
+]
 dependencies = [
-    { name = "numpy" },
-    { name = "pillow" },
-    { name = "torch" },
+    { name = "numpy", marker = "(extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (extra != 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "pillow", marker = "(extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (extra != 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torch", version = "2.8.0", source = { registry = "https://pypi.org/simple" }, marker = "(extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (extra != 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/df/1d/0ea0b34bde92a86d42620f29baa6dcbb5c2fc85990316df5cb8f7abb8ea2/torchvision-0.23.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:e0e2c04a91403e8dd3af9756c6a024a1d9c0ed9c0d592a8314ded8f4fe30d440", size = 1856885, upload-time = "2025-08-06T14:58:06.503Z" },
@@ -1291,11 +1477,55 @@ wheels = [
 ]
 
 [[package]]
+name = "torchvision"
+version = "0.23.0+cpu"
+source = { registry = "https://download.pytorch.org/whl/cpu" }
+resolution-markers = [
+    "(python_full_version >= '3.13' and platform_machine != 'aarch64' and sys_platform == 'linux') or (python_full_version >= '3.13' and sys_platform != 'darwin' and sys_platform != 'linux')",
+    "(python_full_version < '3.13' and platform_machine != 'aarch64' and sys_platform == 'linux') or (python_full_version < '3.13' and sys_platform != 'darwin' and sys_platform != 'linux')",
+]
+dependencies = [
+    { name = "numpy", marker = "(platform_machine != 'aarch64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cpu') or (sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu') or (sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "pillow", marker = "(platform_machine != 'aarch64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cpu') or (sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu') or (sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torch", version = "2.8.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(platform_machine != 'aarch64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cpu') or (sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu') or (sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+]
+wheels = [
+    { url = "https://download.pytorch.org/whl/cpu/torchvision-0.23.0%2Bcpu-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:ae459d4509d3b837b978dc6c66106601f916b6d2cda75c137e3f5f48324ce1da" },
+    { url = "https://download.pytorch.org/whl/cpu/torchvision-0.23.0%2Bcpu-cp312-cp312-win_amd64.whl", hash = "sha256:a651ccc540cf4c87eb988730c59c2220c52b57adc276f044e7efb9830fa65a1d" },
+    { url = "https://download.pytorch.org/whl/cpu/torchvision-0.23.0%2Bcpu-cp313-cp313-manylinux_2_28_x86_64.whl", hash = "sha256:dea90a67d60a5366b0358a0b8d6bf267805278697d6fd950cf0e31139e56d1be" },
+    { url = "https://download.pytorch.org/whl/cpu/torchvision-0.23.0%2Bcpu-cp313-cp313-win_amd64.whl", hash = "sha256:82928788025170c62e7df1120dcdc0cd175bfc31c08374613ce6d1a040bc0cda" },
+    { url = "https://download.pytorch.org/whl/cpu/torchvision-0.23.0%2Bcpu-cp313-cp313t-manylinux_2_28_x86_64.whl", hash = "sha256:474d77adbbbed5166db3e5636b4b4ae3399c66ef5bfa12536e254b32259c90c0" },
+    { url = "https://download.pytorch.org/whl/cpu/torchvision-0.23.0%2Bcpu-cp313-cp313t-win_amd64.whl", hash = "sha256:8d6a47e23d7896f0ef9aa7ea7179eb6324e82438aa66d19884c2020d0646b104" },
+]
+
+[[package]]
+name = "torchvision"
+version = "0.23.0+cu129"
+source = { registry = "https://download.pytorch.org/whl/cu129" }
+resolution-markers = [
+    "(python_full_version >= '3.13' and platform_machine != 'aarch64') or (python_full_version >= '3.13' and sys_platform != 'linux')",
+    "(python_full_version < '3.13' and platform_machine != 'aarch64') or (python_full_version < '3.13' and sys_platform != 'linux')",
+]
+dependencies = [
+    { name = "numpy", marker = "(platform_machine != 'aarch64' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "pillow", marker = "(platform_machine != 'aarch64' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torch", version = "2.8.0+cu129", source = { registry = "https://download.pytorch.org/whl/cu129" }, marker = "(platform_machine != 'aarch64' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+]
+wheels = [
+    { url = "https://download.pytorch.org/whl/cu129/torchvision-0.23.0%2Bcu129-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:6226be1b8399ef655a11965ea4975250f7823fc9b200b35deb9eeac350c667a9" },
+    { url = "https://download.pytorch.org/whl/cu129/torchvision-0.23.0%2Bcu129-cp312-cp312-win_amd64.whl", hash = "sha256:57cf57ada9a5407755e170a4ab3842337b83862c93f9483decaf0b6b4d69fa09" },
+    { url = "https://download.pytorch.org/whl/cu129/torchvision-0.23.0%2Bcu129-cp313-cp313-manylinux_2_28_x86_64.whl", hash = "sha256:04316e24ddd1cee3b301208811a9d7c4cfca5f566ea367f33bda059d8f0e012e" },
+    { url = "https://download.pytorch.org/whl/cu129/torchvision-0.23.0%2Bcu129-cp313-cp313-win_amd64.whl", hash = "sha256:a486a0cee466807a17749d0b916d52088343453dc911baa20f0f459b2fa43c9a" },
+    { url = "https://download.pytorch.org/whl/cu129/torchvision-0.23.0%2Bcu129-cp313-cp313t-manylinux_2_28_x86_64.whl", hash = "sha256:c718f6d2c0e61feed39763925eea3e1f42979f6b21e61276f487409168d9e352" },
+    { url = "https://download.pytorch.org/whl/cu129/torchvision-0.23.0%2Bcu129-cp313-cp313t-win_amd64.whl", hash = "sha256:8218c1f614972abb4710afde96d0f70b174b235f390e165e6fd4cdd5cee6d93d" },
+]
+
+[[package]]
 name = "tqdm"
 version = "4.67.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "sys_platform == 'win32'" },
+    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/a8/4b/29b4ef32e036bb34e4ab51796dd745cdba7ed47ad142a9f4a1eb8e0c744d/tqdm-4.67.1.tar.gz", hash = "sha256:f8aef9c52c08c13a65f30ea34f4e5aac3fd1a34959879d7e59e63027286627f2", size = 169737, upload-time = "2024-11-24T20:12:22.481Z" }
 wheels = [
@@ -1307,7 +1537,7 @@ name = "triton"
 version = "3.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "setuptools", marker = "platform_machine != 'aarch64' or sys_platform != 'linux'" },
+    { name = "setuptools", marker = "extra == 'extra-13-vt-hacks-2025-cu129'" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d0/66/b1eb52839f563623d185f0927eb3530ee4d5ffe9d377cdaf5346b306689e/triton-3.4.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:31c1d84a5c0ec2c0f8e8a072d7fd150cab84a9c239eaddc6706c081bfae4eb04", size = 155560068, upload-time = "2025-07-30T19:58:37.081Z" },
@@ -1354,8 +1584,28 @@ dependencies = [
     { name = "pandas" },
     { name = "pygetwindow" },
     { name = "timm" },
-    { name = "torch" },
-    { name = "torchvision" },
+    { name = "torch", version = "2.8.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torch", version = "2.8.0", source = { registry = "https://pypi.org/simple" }, marker = "(extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (extra != 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torch", version = "2.8.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform != 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torch", version = "2.8.0+cu129", source = { registry = "https://download.pytorch.org/whl/cu129" }, marker = "extra == 'extra-13-vt-hacks-2025-cu129'" },
+    { name = "torchvision", version = "0.23.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cpu') or (platform_machine != 'aarch64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torchvision", version = "0.23.0", source = { registry = "https://download.pytorch.org/whl/cu129" }, marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (platform_machine != 'aarch64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torchvision", version = "0.23.0", source = { registry = "https://pypi.org/simple" }, marker = "(extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (extra != 'extra-13-vt-hacks-2025-cpu' and extra != 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torchvision", version = "0.23.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(platform_machine != 'aarch64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cpu') or (sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu') or (sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torchvision", version = "0.23.0+cu129", source = { registry = "https://download.pytorch.org/whl/cu129" }, marker = "(platform_machine != 'aarch64' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+]
+
+[package.optional-dependencies]
+cpu = [
+    { name = "torch", version = "2.8.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torch", version = "2.8.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform != 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torchvision", version = "0.23.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cpu') or (platform_machine != 'aarch64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torchvision", version = "0.23.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(platform_machine != 'aarch64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cpu') or (sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu') or (sys_platform == 'darwin' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+]
+cu129 = [
+    { name = "torch", version = "2.8.0+cu129", source = { registry = "https://download.pytorch.org/whl/cu129" } },
+    { name = "torchvision", version = "0.23.0", source = { registry = "https://download.pytorch.org/whl/cu129" }, marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (platform_machine != 'aarch64' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
+    { name = "torchvision", version = "0.23.0+cu129", source = { registry = "https://download.pytorch.org/whl/cu129" }, marker = "(platform_machine != 'aarch64' and extra == 'extra-13-vt-hacks-2025-cu129') or (sys_platform != 'linux' and extra == 'extra-13-vt-hacks-2025-cu129') or (extra == 'extra-13-vt-hacks-2025-cpu' and extra == 'extra-13-vt-hacks-2025-cu129')" },
 ]
 
 [package.metadata]
@@ -1368,5 +1618,10 @@ requires-dist = [
     { name = "pygetwindow", specifier = ">=0.0.9" },
     { name = "timm", specifier = ">=1.0.20" },
     { name = "torch", specifier = ">=2.8.0" },
+    { name = "torch", marker = "extra == 'cpu'", specifier = ">=2.8.0", index = "https://download.pytorch.org/whl/cpu", conflict = { package = "vt-hacks-2025", extra = "cpu" } },
+    { name = "torch", marker = "extra == 'cu129'", specifier = ">=2.8.0", index = "https://download.pytorch.org/whl/cu129", conflict = { package = "vt-hacks-2025", extra = "cu129" } },
     { name = "torchvision", specifier = ">=0.23.0" },
+    { name = "torchvision", marker = "extra == 'cpu'", specifier = ">=0.23.0", index = "https://download.pytorch.org/whl/cpu", conflict = { package = "vt-hacks-2025", extra = "cpu" } },
+    { name = "torchvision", marker = "extra == 'cu129'", specifier = ">=0.23.0", index = "https://download.pytorch.org/whl/cu129", conflict = { package = "vt-hacks-2025", extra = "cu129" } },
 ]
+provides-extras = ["cpu", "cu129"]
