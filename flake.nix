@@ -17,21 +17,27 @@
           pkgs.stdenv.cc.cc
           pkgs.libGL
           pkgs.glib
+          pkgs.openssl
           "/run/opengl-driver"
         ];
         venvDir = venvDir;
         packages = with pkgs; [
-          (python313.withPackages (
+          (python312.withPackages (
             ps: with ps; [
               venvShellHook
               pip
               numpy
+              requests
             ]
           ))
           bashInteractive
           grim
           uv
         ];
+        shellHook = ''
+          export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+          export REQUESTS_CA_BUNDLE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+        '';
       };
     };
 }
