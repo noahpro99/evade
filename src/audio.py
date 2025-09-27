@@ -6,7 +6,7 @@ import numpy as np
 import whisper
 
 from audio_analysis import analyze_text_for_threats
-from notifacation import send_text_dm
+from notification import send_text_dm
 from settings import settings
 
 SRC_RATE = 48_000  # pw-record rate

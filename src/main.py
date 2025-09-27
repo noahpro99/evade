@@ -22,7 +22,7 @@ from data import (
     unmake_safe_name,
 )
 from detection import detect_faces
-from notifacation import send_photo_dm
+from notification import send_photo_dm
 from settings import settings
 from similarity import COMPARISON_THRESHOLD, _tx, compare_embeddings, get_edge_model
 
