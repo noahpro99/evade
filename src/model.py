@@ -117,7 +117,7 @@ def get_edge_model(name: str) -> torch.nn.Module:
 get_edge_model.cache = {}
 
 
-def compare(img_left, img_right, variant):
+def compare(img_left, img_right, variant="edgeface_s_gamma_05") -> float:
     mdl = get_edge_model(variant)
     dev = next(mdl.parameters()).device
     with torch.no_grad():
@@ -125,6 +125,7 @@ def compare(img_left, img_right, variant):
         eb = mdl(_tx(cv2.cvtColor(img_right, cv2.COLOR_RGB2BGR))[None].to(dev))[0]
     pct = float(F.cosine_similarity(ea[None], eb[None]).item() * 100)
     pct = max(0, min(100, pct))
+    print(f"Similarity: {pct:.2f}%")
     return pct
 
 

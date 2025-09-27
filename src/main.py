@@ -3,13 +3,15 @@ import json
 import os
 import subprocess as sp
 import time
-import numpy as np
-import pandas as pd
 from datetime import datetime
 from pathlib import Path
 
-from src.data import OFFENDER_CSV_PATH, OFFENDER_IMAGES
-from src.model import compare
+import cv2
+import numpy as np
+import pandas as pd
+
+from data import OFFENDER_CSV_PATH, OFFENDER_IMAGES, unmake_safe_name
+from model import compare
 
 OUT_DIR = Path.cwd() / "data" / "sshots"
 TITLE_KEYWORD = "Messenger call"
@@ -52,14 +54,23 @@ def snap_once(geom: str) -> Path:
         old.unlink()
     return out_path
 
-def find_match(img_fromstream: np.ndarray):
+
+def find_match(img_fromstream: np.ndarray) -> pd.Series | None:
     offender_name = None
-    for offender_filename in os.listr(OFFENDER_IMAGES):
-        if compare(offender_filename, img_fromstream) >= COMPARISON_THRESHHOLD:
-            offender_name = offender_filename
+    for offender_filename in os.listdir(OFFENDER_IMAGES):
+        offender_image = cv2.imread(os.path.join(OFFENDER_IMAGES, offender_filename))
+        if compare(offender_image, img_fromstream) >= COMPARISON_THRESHHOLD:
+            offender_name = unmake_safe_name(offender_filename)
+            print(f"Found matching offender: {offender_name}")
             break
-    offender_row = OFFENDER_REGISTRY[OFFENDER_REGISTRY['Name'] == offender_name]
+    offender_row = OFFENDER_REGISTRY[OFFENDER_REGISTRY["Name"] == offender_name]
+    if offender_row.empty:
+        print("No match found")
+        return None
+    assert len(offender_row) == 1
+    print(f"Match found: {offender_name}")
     return offender_row.iloc[0]
+
 
 def main():
     try:
@@ -74,4 +85,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    test_image_path = Path("data/test_images/image.png")
+    if test_image_path.exists():
+        img = cv2.imread(str(test_image_path))
+        assert img is not None
+        find_match(img)

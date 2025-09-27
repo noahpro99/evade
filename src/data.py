@@ -7,6 +7,21 @@ OFFENDER_CSV_PATH = Path("data/offender_list - offender_list.csv")
 
 OFFENDER_IMAGES = "data/offender_list/images"
 
+
+def make_safe_name(name: str) -> str:
+    """Convert a name to a filesystem-safe string."""
+    safe = "".join(c for c in name if c.isalnum() or c in (" ", "-", "_")).rstrip()
+    return safe.replace(" ", "_")
+
+
+def unmake_safe_name(safe_name: str) -> str:
+    """Convert a filesystem-safe string back to a regular name."""
+    # remove extension if present
+    if "." in safe_name:
+        safe_name = safe_name.rsplit(".", 1)[0]
+    return safe_name.replace("_", " ")
+
+
 def download_images_if_missing():
     images_dir = Path("data/offender_list/images")
     images_dir.mkdir(parents=True, exist_ok=True)
@@ -23,10 +38,7 @@ def download_images_if_missing():
                         link and link.startswith("http") and name
                     ):  # Only add valid URLs with names
                         # Clean the name to be filesystem-safe
-                        safe_name = "".join(
-                            c for c in name if c.isalnum() or c in (" ", "-", "_")
-                        ).rstrip()
-                        safe_name = safe_name.replace(" ", "_")
+                        safe_name = make_safe_name(name)
 
                         # Use the person's name as the filename with .jpg extension
                         filename = images_dir / f"{safe_name}.jpg"
