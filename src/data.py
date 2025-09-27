@@ -3,15 +3,16 @@ from pathlib import Path
 
 import requests
 
-OFFENDER_CSV = Path("data/offender_list - offender_list.csv")
+OFFENDER_CSV_PATH = Path("data/offender_list - offender_list.csv")
 
+OFFENDER_IMAGES = "data/offender_list/images"
 
 def download_images_if_missing():
     images_dir = Path("data/offender_list/images")
     images_dir.mkdir(parents=True, exist_ok=True)
 
-    if OFFENDER_CSV.exists():
-        with open(OFFENDER_CSV, "r", newline="", encoding="utf-8") as f:
+    if OFFENDER_CSV_PATH.exists():
+        with open(OFFENDER_CSV_PATH, "r", newline="", encoding="utf-8") as f:
             reader = csv.reader(f)
             next(reader)  # Skip header row
             for row in reader:

@@ -1,13 +1,21 @@
 #!/usr/bin/env python3
 import json
+import os
 import subprocess as sp
 import time
+import numpy as np
+import pandas as pd
 from datetime import datetime
 from pathlib import Path
+
+from src.data import OFFENDER_CSV_PATH, OFFENDER_IMAGES
+from src.model import compare
 
 OUT_DIR = Path.cwd() / "data" / "sshots"
 TITLE_KEYWORD = "Messenger call"
 INTERVAL_SEC = 1.0
+COMPARISON_THRESHHOLD = 70.0
+OFFENDER_REGISTRY = pd.read_csv(OFFENDER_CSV_PATH)
 
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -44,6 +52,14 @@ def snap_once(geom: str) -> Path:
         old.unlink()
     return out_path
 
+def find_match(img_fromstream: np.ndarray):
+    offender_name = None
+    for offender_filename in os.listr(OFFENDER_IMAGES):
+        if compare(offender_filename, img_fromstream) >= COMPARISON_THRESHHOLD:
+            offender_name = offender_filename
+            break
+    offender_row = OFFENDER_REGISTRY[OFFENDER_REGISTRY['Name'] == offender_name]
+    return offender_row.iloc[0]
 
 def main():
     try:
