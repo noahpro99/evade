@@ -5,6 +5,7 @@ import {
   Phone,
   Shield,
   Heart,
+  CheckCircle,
   MapPin,
   Edit,
   History,
@@ -114,7 +115,6 @@ const App = () => {
           <h2 className="text-xl font-bold text-dark">EVADE Device Status</h2>
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 bg-dark rounded-full animate-pulse"></div>
-            <span className="text-sm font-medium text-dark">Connected</span>
           </div>
         </div>
 
@@ -139,80 +139,20 @@ const App = () => {
         </div>
       </div>
 
-      {/* Auto-Call Police Section - Only for Adult Mode */}
-      {isAdultMode && (
-        <div className="bg-white border border-white rounded-3xl shadow-sm p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-dark">Emergency Response</h3>
-            <span className="text-sm text-dark bg-white px-2 py-1 rounded-full">
-              Adult Mode
-            </span>
-          </div>
-          <div className="bg-white border border-white rounded-xl p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <Phone className="w-5 h-5 text-dark" />
-                <div>
-                  <span className="text-dark font-medium">
-                    Auto-Call Police
-                  </span>
-                  <p className="text-sm text-dark mt-1">
-                    Automatically contact authorities when high-risk offender
-                    detected
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center bg-white border border-dark rounded-full p-1">
-                <button
-                  onClick={() =>
-                    setAlertSettings({
-                      ...alertSettings,
-                      autoCallPolice: false,
-                    })
-                  }
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                    !alertSettings.autoCallPolice
-                      ? "bg-dark text-white"
-                      : "text-dark hover:bg-white"
-                  }`}
-                >
-                  Off
-                </button>
-                <button
-                  onClick={() =>
-                    setAlertSettings({
-                      ...alertSettings,
-                      autoCallPolice: true,
-                    })
-                  }
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                    alertSettings.autoCallPolice
-                      ? "bg-dark text-white"
-                      : "text-dark hover:bg-white"
-                  }`}
-                >
-                  On
-                </button>
-              </div>
+      {/* Safety Status */}
+      <div className="bg-white border border-white rounded-3xl shadow-sm p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <CheckCircle className="w-6 h-6 text-dark" />
+            <div>
+              <h3 className="font-semibold text-dark">Safety Status</h3>
+              <p className="text-sm text-dark">
+                You are not near the living area of any registered offenders
+              </p>
             </div>
-            {alertSettings.autoCallPolice && (
-              <div className="mt-4 p-3 bg-white rounded-lg">
-                <div className="flex items-start space-x-2">
-                  <Shield className="w-4 h-4 text-dark mt-0.5" />
-                  <div className="text-sm text-dark">
-                    <p className="font-medium">Emergency Protocol Active</p>
-                    <p className="mt-1">
-                      When a Tier 3 offender is detected, emergency services
-                      will be contacted automatically with your location and
-                      offender details.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
-      )}
+      </div>
 
       {/* Recent Activity */}
       <div className="bg-white border border-white rounded-3xl shadow-sm p-6">
@@ -232,11 +172,17 @@ const App = () => {
               key={detection.id}
               className="flex items-center space-x-3 p-3 bg-white rounded-xl"
             >
-              <img
-                className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center text-sm"
-                src={detection.photo}
-                alt={detection.name}
-              />
+              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-sm overflow-hidden">
+                {detection.photo.startsWith("http") ? (
+                  <img
+                    src={detection.photo}
+                    alt={detection.name}
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                ) : (
+                  <span className="text-lg">{detection.photo}</span>
+                )}
+              </div>
               <div className="flex-1">
                 <div className="font-medium text-dark">{detection.name}</div>
                 <div className="text-sm text-dark">
@@ -263,8 +209,6 @@ const App = () => {
           <History className="w-4 h-4 text-dark" />
           <span className="text-sm font-medium text-dark">Detection Log</span>
         </div>
-        <h2 className="text-2xl font-bold text-dark mb-2">Recent Detections</h2>
-        <p className="text-dark">Offenders detected by your EVADE system</p>
       </div>
 
       <div className="space-y-4">
@@ -274,8 +218,16 @@ const App = () => {
             className="bg-white border border-white rounded-2xl shadow-sm p-6"
           >
             <div className="flex items-start space-x-4">
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-2xl">
-                {detection.photo}
+              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-2xl overflow-hidden">
+                {detection.photo.startsWith("http") ? (
+                  <img
+                    src={detection.photo}
+                    alt={detection.name}
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                ) : (
+                  detection.photo
+                )}
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-2">
@@ -408,6 +360,76 @@ const App = () => {
             ))}
           </div>
         </div>
+
+        {/* Auto-Call Police Section - Only for Adult Mode */}
+        {isAdultMode && (
+          <div className="bg-white border border-white rounded-2xl shadow-sm p-6">
+            <h3 className="font-semibold text-dark mb-4">Emergency Response</h3>
+            <div className="bg-white border border-white rounded-xl p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <Phone className="w-5 h-5 text-dark" />
+                  <div>
+                    <span className="text-dark font-medium">
+                      Auto-Call Police
+                    </span>
+                    <p className="text-sm text-dark mt-1">
+                      Automatically contact authorities when high-risk offender
+                      detected
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center bg-white border border-dark rounded-full p-1">
+                  <button
+                    onClick={() =>
+                      setAlertSettings({
+                        ...alertSettings,
+                        autoCallPolice: false,
+                      })
+                    }
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                      !alertSettings.autoCallPolice
+                        ? "bg-dark text-white"
+                        : "text-dark hover:bg-white"
+                    }`}
+                  >
+                    Off
+                  </button>
+                  <button
+                    onClick={() =>
+                      setAlertSettings({
+                        ...alertSettings,
+                        autoCallPolice: true,
+                      })
+                    }
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                      alertSettings.autoCallPolice
+                        ? "bg-dark text-white"
+                        : "text-dark hover:bg-white"
+                    }`}
+                  >
+                    On
+                  </button>
+                </div>
+              </div>
+              {alertSettings.autoCallPolice && (
+                <div className="mt-4 p-3 bg-white rounded-lg">
+                  <div className="flex items-start space-x-2">
+                    <Shield className="w-4 h-4 text-dark mt-0.5" />
+                    <div className="text-sm text-dark">
+                      <p className="font-medium">Emergency Protocol Active</p>
+                      <p className="mt-1">
+                        When a Tier 3 offender is detected, emergency services
+                        will be contacted automatically with your location and
+                        offender details.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Emergency Contacts Section - Only for Kid Mode */}
         {!isAdultMode && (
