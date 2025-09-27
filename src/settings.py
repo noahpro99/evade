@@ -21,3 +21,6 @@ class AppSettings(BaseSettings):
     TITLE_KEYWORD: str = Field(
         default="Messenger call", description="Keyword to identify target window"
     )
+
+
+settings = AppSettings()
