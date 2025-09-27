@@ -3,6 +3,7 @@ import os
 import pickle
 import platform
 import subprocess as sp
+import threading
 import time
 from datetime import datetime
 from pathlib import Path
@@ -20,7 +21,7 @@ from similarity import _tx, get_edge_model
 OUT_DIR = Path.cwd() / "data" / "sshots"
 EMBEDDINGS_PATH = Path.cwd() / "models" / "offender_embeddings.pkl"
 TITLE_KEYWORD = "Photo Booth"  # Example keyword to identify target window
-INTERVAL_SEC = 1/30  # 30 FPS
+INTERVAL_SEC = 1/ 30
 COMPARISON_THRESHHOLD = 70.0
 OFFENDER_REGISTRY = pd.read_csv(OFFENDER_CSV_PATH)
 IS_MACOS = platform.system() == "Darwin"
@@ -114,29 +115,75 @@ def focus_window_macos(app_name):
         sp.run(["osascript", "-e", fallback_script], check=True)
 
 
-def snap_once(geom: str) -> Path:
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-    out_path = OUT_DIR / f"messenger_{ts}.png"
+def save_image_async(image_data: np.ndarray, path: Path):
+    """Saves image data to a file in a separate thread."""
+    threading.Thread(target=cv2.imwrite, args=(str(path), image_data)).start()
+
+
+def snap_once(geom: str) -> np.ndarray | None:
+    """Captures a screenshot and returns the image data."""
     if IS_MACOS:
-        snap_once_macos(geom, out_path)
+        return snap_once_macos(geom)
     else:
-        snap_once_linux(geom, out_path)
-    print(f"Saved screenshot to {out_path}")
-    screenshots = sorted(OUT_DIR.glob("*.png"), key=lambda p: p.stat().st_mtime, reverse=True)
-    for old in screenshots[5:]:
-        old.unlink()
-    return out_path
+        return snap_once_linux(geom)
 
 
-def snap_once_linux(geom: str, out_path: Path):
-    sp.run(["grim", "-g", geom, str(out_path)], check=True)
+def snap_once_linux(geom: str) -> np.ndarray | None:
+    try:
+        output = sp.check_output(["grim", "-g", geom, "-"])
+        img_np = np.frombuffer(output, np.uint8)
+        return cv2.imdecode(img_np, cv2.IMREAD_COLOR)
+    except sp.CalledProcessError as e:
+        print(f"Error capturing screenshot on Linux: {e}")
+        return None
 
 
-def snap_once_macos(geom: str, out_path: Path):
+def snap_once_macos(geom: str) -> np.ndarray | None:
+    import tempfile
+    
     pos_part, size_part = geom.split(" ")
     x, y = map(int, pos_part.split(","))
     w, h = map(int, size_part.split("x"))
-    sp.run(["screencapture", "-R", f"{x},{y},{w},{h}", str(out_path)], check=True)
+    
+    # Use a temporary file instead of stdout, as stdout seems to have issues with -R flag
+    with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_file:
+        temp_path = temp_file.name
+    
+    try:
+        cmd = ["screencapture", "-R", f"{x},{y},{w},{h}", "-o", temp_path]
+        
+        result = sp.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            print(f"ERROR: screencapture failed with return code {result.returncode}")
+            print(f"stderr: {result.stderr}")
+            return None
+        
+        # Read the image file
+        if not os.path.exists(temp_path):
+            print("ERROR: Screenshot file was not created")
+            return None
+            
+        file_size = os.path.getsize(temp_path)
+        
+        if file_size == 0:
+            print("ERROR: Screenshot file is empty")
+            return None
+        
+        # Load the image using OpenCV
+        decoded_img = cv2.imread(temp_path)
+        if decoded_img is None:
+            print("ERROR: Failed to load screenshot image")
+            return None
+            
+        return decoded_img
+        
+    except Exception as e:
+        print(f"Error capturing screenshot on macOS: {e}")
+        return None
+    finally:
+        # Clean up temporary file
+        if os.path.exists(temp_path):
+            os.unlink(temp_path)
 
 
 def compare_embeddings(embedding1, embedding2) -> float:
@@ -182,26 +229,45 @@ def main():
 
         model = get_edge_model("edgeface_s_gamma_05")
 
+        print(f"Starting monitoring for windows containing '{TITLE_KEYWORD}'...")
+        print("Press Ctrl+C to stop.")
+        
+        consecutive_failures = 0
+        max_consecutive_failures = 10
+        
         while True:
             addr, geom = find_target()
             if geom:
+                consecutive_failures = 0  # Reset failure counter
                 focus_window(addr)
-                screenshot_path = snap_once(geom)
-                img = cv2.imread(str(screenshot_path))
-                if img is None:
-                    print(f"Failed to load image: {screenshot_path}")
-                    continue
-                faces = detect_faces(img)
-                for i, face in enumerate(faces):
-                    cv2.imshow(f"Face {i+1}", face)
-                    cv2.waitKey(1)
-                for face in faces:
-                    offender = find_match(face, offender_embeddings, model)
-                    if offender is not None:
-                        print("Offender details:")
-                        print(offender.to_string())
+                img_data = snap_once(geom)
+                if img_data is not None:
+                    ts = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+                    out_path = OUT_DIR / f"messenger_{ts}.png"
+                    save_image_async(img_data, out_path)
+
+                    faces = detect_faces(img_data)
+                    if faces:
+                        for i, face in enumerate(faces):
+                            cv2.imshow(f"Face {i+1}", face)
+                            cv2.waitKey(1)
+                        for face in faces:
+                            offender = find_match(face, offender_embeddings, model)
+                            if offender is not None:
+                                print("Offender details:")
+                                print(offender.to_string())
+                else:
+                    print("Failed to capture screenshot")
             else:
-                print(f"Could not find window with title containing '{TITLE_KEYWORD}'")
+                consecutive_failures += 1
+                if consecutive_failures == 1:
+                    print(f"Could not find window with title containing '{TITLE_KEYWORD}'")
+                    print("Make sure the target application is open and visible.")
+                elif consecutive_failures >= max_consecutive_failures:
+                    print(f"Failed to find target window {max_consecutive_failures} times in a row.")
+                    print("Continuing to monitor...")
+                    consecutive_failures = 0  # Reset to avoid spam
+                    
             time.sleep(INTERVAL_SEC)
     except KeyboardInterrupt:
         pass
