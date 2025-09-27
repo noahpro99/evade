@@ -1,38 +1,56 @@
-import cv2
+#!/usr/bin/env python3
+import json
+import subprocess as sp
+import time
+from datetime import datetime
+from pathlib import Path
 
-win = next(w for w in gw.getAllTitles() if "Chrome" in w or "Firefox" in w or "Brave" in w)
-w = gw.getWindowsWithTitle(win)[0]
-left, top, right, bottom = w.left, w.top, w.right, w.bottom
-bbox = {"left": left, "top": top, "width": right-left, "height": bottom-top}
+OUT_DIR = Path.cwd() / "data" / "sshots"
+TITLE_KEYWORD = "Messenger call"
+INTERVAL_SEC = 1.0
 
-# 2) Grab frames and feed to OpenCV.
-sct = mss.mss()
-fps_ts = time.time()
-frames = 0
-
-face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
-while True:
-    ret, frame = cap.read()
-    if not ret:
-        break
+def run(cmd):
+    return sp.run(cmd, check=True, stdout=sp.PIPE, text=True).stdout
 
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
-    for (x, y, w, h) in faces:
-        # Extract the face ROI
-        face_roi = frame[y:y+h, x:x+w]
+def find_target():
+    raw = run(["hyprctl", "clients", "-j"])
+    for c in json.loads(raw):
+        if TITLE_KEYWORD.lower() in c.get("title", "").lower():
+            # geometry: "x,y WxH"
+            x, y = c["at"][0], c["at"][1]
+            w, h = c["size"][0], c["size"][1]
+            return c["address"], f"{x},{y} {w}x{h}"
+    return None, None
 
-        # Process the extracted face (e.g., save it, draw rectangle)
-        cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-        # cv2.imwrite(f"face_{count}.jpg", face_roi) # Example: save each face
 
-    cv2.imshow('Face Detection', frame)
+def focus_window(addr):
+    sp.run(["hyprctl", "dispatch", "focuswindow", f"address:{addr}"], check=True)
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
 
-cap.release()
-cv2.destroyAllWindows()
+def snap_once(geom: str) -> Path:
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    out_path = OUT_DIR / f"messenger_{ts}.png"
+    # grim is non-interactive with -g; avoids hyprshot pipeline
+    sp.run(["grim", "-g", geom, str(out_path)], check=True)
+    print(f"Saved screenshot to {out_path}")
+    return out_path
+
+
+def main():
+    try:
+        while True:
+            addr, geom = find_target()
+            if geom:
+                focus_window(addr)
+                snap_once(geom)
+            time.sleep(INTERVAL_SEC)
+    except KeyboardInterrupt:
+        pass
+
+
+if __name__ == "__main__":
+    main()
