@@ -1,39 +1,80 @@
+import atexit
+import subprocess
+import sys
+
 import numpy as np
-import pyaudio
 import whisper
 
+SRC_RATE = 48_000  # pw-record rate
+TGT_RATE = 16_000  # Whisper expects 16 kHz
+CH = 2  # desktop mix is stereo
+SAMPWIDTH = 2  # s16
+FRAMES = 4096  # pw-record chunk size (frames)
+CHUNK_BYTES = FRAMES * CH * SAMPWIDTH
+WINDOW_SEC = 5
+CHUNKS_PER_WIN = (SRC_RATE * WINDOW_SEC) // FRAMES  # 48000/4096 * 5 ≈ 58
 
-def transcribe_audio():
-    # start thread for audio transcription
-    model = whisper.load_model("small")  # Changed to "small" for better accuracy
+CMD = [
+    "pw-record",
+    "-P",
+    "{ stream.capture.sink=true }",  # capture post-mix sink (desktop audio only)
+    "--rate",
+    str(SRC_RATE),
+    "--channels",
+    str(CH),
+    "--format",
+    "s16",
+    "-",  # write raw PCM to stdout
+]
 
-    pa = pyaudio.PyAudio()
-    stream = pa.open(
-        format=pyaudio.paInt16,
-        channels=1,
-        rate=16000,
-        input=True,
-        frames_per_buffer=4096,
+
+def main():
+    model = whisper.load_model("small")
+
+    proc = subprocess.Popen(
+        CMD,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        bufsize=0,
     )
+    if not proc.stdout:
+        sys.exit("pw-record stdout unavailable")
+    atexit.register(proc.kill)
 
-    print("Listening...")
-    buffer = []
-    buffer_duration = 5  # seconds
-    samples_per_second = 16000
-    frames_needed = int(samples_per_second * buffer_duration / 4096)  # Approximate
+    buf = []
+    try:
+        while True:
+            chunk = proc.stdout.read(CHUNK_BYTES)
+            if not chunk:
+                break
+            buf.append(chunk)
+            if len(buf) >= CHUNKS_PER_WIN:
+                block = b"".join(buf)
+                buf.clear()
 
-    while True:
-        data = stream.read(4096, exception_on_overflow=False)
-        buffer.append(data)
+                # bytes -> int16 -> stereo to mono
+                pcm = (
+                    np.frombuffer(block, dtype=np.int16)
+                    .reshape(-1, CH)
+                    .mean(axis=1)
+                    .astype(np.int16)
+                )
 
-        if len(buffer) >= frames_needed:
-            # Concatenate buffer
-            full_data = b"".join(buffer)
-            audio = np.frombuffer(full_data, np.int16).astype(np.float32) / 32768.0
-            result = model.transcribe(audio, fp16=False)
-            print(result["text"])
-            buffer = []  # Clear buffer
+                # int16 -> float32 in [-1, 1]
+                mono = pcm.astype(np.float32) / 32768.0
+
+                # 48 kHz -> 16 kHz (exact decimation by 3)
+                audio = mono[:: (SRC_RATE // TGT_RATE)].copy()
+
+                # transcribe and print only the text line
+                text = model.transcribe(audio, fp16=False)["text"]
+                if text:
+                    print(text, flush=True)
+
+    finally:
+        proc.kill()
+        proc.wait(timeout=1)
 
 
 if __name__ == "__main__":
-    transcribe_audio()
+    main()

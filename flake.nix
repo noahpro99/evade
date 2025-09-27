@@ -18,7 +18,6 @@
           pkgs.libGL
           pkgs.glib
           pkgs.openssl
-          pkgs.portaudio
           "/run/opengl-driver"
         ];
         venvDir = venvDir;
@@ -34,7 +33,6 @@
           bashInteractive
           grim
           uv
-          portaudio
         ];
         shellHook = ''
           export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
