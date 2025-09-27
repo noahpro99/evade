@@ -3,3 +3,4 @@
 !.env.example
 .direnv
 data/
+models/
