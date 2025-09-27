@@ -14,7 +14,7 @@ import pandas as pd
 import torch
 from torch.nn import functional as F
 
-from data import OFFENDER_CSV_PATH, unmake_safe_name
+from data import OFFENDER_CSV_PATH, download_images_if_missing, unmake_safe_name
 from detection import detect_faces
 from similarity import _tx, get_edge_model
 
@@ -226,6 +226,7 @@ def find_match(
 
 def main():
     try:
+        download_images_if_missing()
         if not EMBEDDINGS_PATH.is_file() or EMBEDDINGS_PATH.stat().st_size == 0:
             print(f"Warning: Offender embeddings not found at '{EMBEDDINGS_PATH}'.")
             print("Please run 'uv run src/precompute_embeddings.py' to generate them.")
