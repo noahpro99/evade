@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Home,
   FileText,
@@ -58,7 +58,7 @@ const App = () => {
   });
 
   // Emergency Contacts
-  const [emergencyContacts, setEmergencyContacts] = useState([
+  const [emergencyContacts] = useState([
     {
       id: 1,
       name: "Sarah Johnson",
