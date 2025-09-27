@@ -22,7 +22,7 @@
         ];
         venvDir = venvDir;
         packages = with pkgs; [
-          (python313.withPackages (
+          (python312.withPackages (
             ps: with ps; [
               venvShellHook
               pip
@@ -35,8 +35,8 @@
           uv
         ];
         shellHook = ''
-          export SSL_CERT_FILE=${pkgs.openssl}/etc/ssl/certs/ca-bundle.crt
-          unset SSL_CERT_FILE
+          export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+          export REQUESTS_CA_BUNDLE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
         '';
       };
     };

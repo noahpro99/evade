@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 
 from data import OFFENDER_CSV_PATH, OFFENDER_IMAGES, unmake_safe_name
+from detection import detect_faces
 from similarity import compare
 
 OUT_DIR = Path.cwd() / "data" / "sshots"
@@ -79,14 +80,20 @@ def main():
             if geom:
                 focus_window(addr)
                 snap_once(geom)
+                faces = detect_faces(
+                    sorted(OUT_DIR.glob("*.png"), key=os.path.getmtime)[0]
+                )
+                for face in faces:
+                    offender = find_match(face)
+                    if offender is not None:
+                        print("Offender details:")
+                        print(offender.to_string())
+            else:
+                print(f"Could not find window with title containing '{TITLE_KEYWORD}'")
             time.sleep(INTERVAL_SEC)
     except KeyboardInterrupt:
         pass
 
 
 if __name__ == "__main__":
-    test_image_path = Path("data/test_images/image.png")
-    if test_image_path.exists():
-        img = cv2.imread(str(test_image_path))
-        assert img is not None
-        find_match(img)
+    main()
