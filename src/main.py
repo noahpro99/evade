@@ -12,17 +12,16 @@ import cv2
 import numpy as np
 import pandas as pd
 import torch
-from torch.nn import functional as F
+import torch.nn.functional as F
 
-from data import OFFENDER_CSV_PATH, download_images_if_missing, unmake_safe_name
+from data import OFFENDER_CSV_PATH, download_images_if_missing, OFFENDER_IMAGES_DIR, unmake_safe_name
 from detection import detect_faces
-from similarity import _tx, get_edge_model
+from similarity import _tx, get_edge_model, COMPARISON_THRESHHOLD, compare_embeddings, get_face_encodings
 
 OUT_DIR = Path.cwd() / "data" / "sshots"
 EMBEDDINGS_PATH = Path.cwd() / "models" / "offender_embeddings.pkl"
-TITLE_KEYWORD = "Messenger call"  # or "Photo Booth"
-INTERVAL_SEC = 1 / 30
-COMPARISON_THRESHOLD = 70.0
+TITLE_KEYWORD = "Photo Booth"  # Example keyword to identify target window
+INTERVAL_SEC = 1.0
 OFFENDER_REGISTRY = pd.read_csv(OFFENDER_CSV_PATH)
 IS_MACOS = platform.system() == "Darwin"
 
@@ -140,75 +139,48 @@ def snap_once_linux(geom: str) -> np.ndarray | None:
 
 def snap_once_macos(geom: str) -> np.ndarray | None:
     import tempfile
-
+    
     pos_part, size_part = geom.split(" ")
     x, y = map(int, pos_part.split(","))
     w, h = map(int, size_part.split("x"))
-
-    # Use a temporary file instead of stdout, as stdout seems to have issues with -R flag
-    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
+    
+    with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_file:
         temp_path = temp_file.name
-
+    
     try:
         cmd = ["screencapture", "-R", f"{x},{y},{w},{h}", "-o", temp_path]
-
+        
         result = sp.run(cmd, capture_output=True, text=True)
         if result.returncode != 0:
             print(f"ERROR: screencapture failed with return code {result.returncode}")
             print(f"stderr: {result.stderr}")
             return None
-
-        # Read the image file
-        if not os.path.exists(temp_path):
-            print("ERROR: Screenshot file was not created")
+        
+        if not os.path.exists(temp_path) or os.path.getsize(temp_path) == 0:
+            print("ERROR: Screenshot file is empty or was not created")
             return None
-
-        file_size = os.path.getsize(temp_path)
-
-        if file_size == 0:
-            print("ERROR: Screenshot file is empty")
-            return None
-
-        # Load the image using OpenCV
+            
         decoded_img = cv2.imread(temp_path)
         if decoded_img is None:
             print("ERROR: Failed to load screenshot image")
             return None
-
+            
         return decoded_img
-
+        
     except Exception as e:
         print(f"Error capturing screenshot on macOS: {e}")
         return None
     finally:
-        # Clean up temporary file
         if os.path.exists(temp_path):
             os.unlink(temp_path)
-
-
-def compare_embeddings(embedding1, embedding2) -> float:
-    """Computes cosine similarity between two embeddings."""
-    embedding1 = torch.from_numpy(embedding1)
-    embedding2 = torch.from_numpy(embedding2)
-    similarity = F.cosine_similarity(
-        embedding1.unsqueeze(0), embedding2.unsqueeze(0)
-    ).item()
-    return max(0, min(100, similarity * 100))
-
 
 def find_match(
     img_fromstream: np.ndarray, offender_embeddings: dict[str, np.ndarray], model
 ) -> pd.Series | None:
-    """Finds a matching offender from pre-computed embeddings."""
     device = next(model.parameters()).device
     with torch.no_grad():
-        live_embedding = (
-            model(
-                _tx(cv2.cvtColor(img_fromstream, cv2.COLOR_RGB2BGR))[None].to(device)
-            )[0]
-            .cpu()
-            .numpy()
-        )
+        img_rgb = cv2.cvtColor(img_fromstream, cv2.COLOR_BGR2RGB)
+        live_embedding = model(_tx(img_rgb)[None].to(device))[0].cpu().numpy()
 
     for offender_filename, stored_embedding in offender_embeddings.items():
         similarity = compare_embeddings(live_embedding, stored_embedding)
@@ -236,18 +208,12 @@ def main():
                 offender_embeddings = pickle.load(f)
             print(f"Loaded {len(offender_embeddings)} offender embeddings.")
 
-        model = get_edge_model("edgeface_s_gamma_05")
-
         print(f"Starting monitoring for windows containing '{TITLE_KEYWORD}'...")
         print("Press Ctrl+C to stop.")
-
-        consecutive_failures = 0
-        max_consecutive_failures = 10
-
+        
         while True:
             addr, geom = find_target()
             if geom:
-                consecutive_failures = 0  # Reset failure counter
                 focus_window(addr)
                 img_data = snap_once(geom)
                 if img_data is not None:
@@ -255,12 +221,15 @@ def main():
                     out_path = OUT_DIR / f"messenger_{ts}.png"
                     save_image_async(img_data, out_path)
 
+                    # Detect faces in the image
                     faces = detect_faces(img_data)
+
                     if faces:
+                        model = get_edge_model("edgeface_s_gamma_05")
                         for i, face in enumerate(faces):
-                            cv2.imshow(f"Face {i + 1}", face)
+                            cv2.imshow(f"Face {i+1}", face)
                             cv2.waitKey(1)
-                        for face in faces:
+                            
                             offender = find_match(face, offender_embeddings, model)
                             if offender is not None:
                                 print("Offender details:")
@@ -268,19 +237,7 @@ def main():
                 else:
                     print("Failed to capture screenshot")
             else:
-                consecutive_failures += 1
-                if consecutive_failures == 1:
-                    print(
-                        f"Could not find window with title containing '{TITLE_KEYWORD}'"
-                    )
-                    print("Make sure the target application is open and visible.")
-                elif consecutive_failures >= max_consecutive_failures:
-                    print(
-                        f"Failed to find target window {max_consecutive_failures} times in a row."
-                    )
-                    print("Continuing to monitor...")
-                    consecutive_failures = 0  # Reset to avoid spam
-
+                print(f"Could not find window with title containing '{TITLE_KEYWORD}'")
             time.sleep(INTERVAL_SEC)
     except KeyboardInterrupt:
         pass

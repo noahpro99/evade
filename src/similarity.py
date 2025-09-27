@@ -37,41 +37,32 @@ model_configs = {
     },
 }
 
-_tx = transforms.Compose(
-    [
-        transforms.ToTensor(),
-        transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
-    ]
-)
+# FIXED: proper preprocessing
+_tx = transforms.Compose([
+    transforms.ToPILImage(),
+    transforms.Resize((112, 112)),
+    transforms.ToTensor(),
+    transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
+])
 
 
 class LoRaLin(nn.Module):
     def __init__(self, in_features, out_features, rank, bias=True):
-        super(LoRaLin, self).__init__()
-        self.in_features = in_features
-        self.out_features = out_features
-        self.rank = rank
+        super().__init__()
         self.linear1 = nn.Linear(in_features, rank, bias=False)
         self.linear2 = nn.Linear(rank, out_features, bias=bias)
 
     def forward(self, input):
-        x = self.linear1(input)
-        x = self.linear2(x)
-        return x
+        return self.linear2(self.linear1(input))
 
 
 def replace_linear_with_lowrank_recursive_2(model, rank_ratio=0.2):
     for name, module in model.named_children():
         if isinstance(module, nn.Linear) and "head" not in name:
-            in_features = module.in_features
-            out_features = module.out_features
+            in_features, out_features = module.in_features, module.out_features
             rank = max(2, int(min(in_features, out_features) * rank_ratio))
-            bias = False
-            if module.bias is not None:
-                bias = True
-            lowrank_module = LoRaLin(in_features, out_features, rank, bias)
-
-            setattr(model, name, lowrank_module)
+            bias = module.bias is not None
+            setattr(model, name, LoRaLin(in_features, out_features, rank, bias))
         else:
             replace_linear_with_lowrank_recursive_2(module, rank_ratio)
 
@@ -82,58 +73,34 @@ def replace_linear_with_lowrank_2(model, rank_ratio=0.2):
 
 
 class TimmFRWrapperV2(nn.Module):
-    """
-    Wraps timm model
-    """
-
     def __init__(self, model_name="edgenext_x_small", featdim=512, batchnorm=False):
         super().__init__()
-        self.featdim = featdim
-        self.model_name = model_name
-
-        self.model = timm.create_model(self.model_name)
-        self.model.reset_classifier(self.featdim)
+        self.model = timm.create_model(model_name)
+        self.model.reset_classifier(featdim)
 
     def forward(self, x):
-        x = self.model(x)
-        return x
+        return self.model(x)
 
 
 def get_edge_model(name: str) -> torch.nn.Module:
-    """Return a cached EdgeFace model by name.
-
-    Ensures:
-    - Single download per model variant.
-    - post_setup returns an nn.Module (guards against accidental forward pass usage).
-    """
     if name in _EDGE_MODEL_CACHE:
         return _EDGE_MODEL_CACHE[name]
 
     if name not in model_configs:
-        raise KeyError(
-            f"Unknown edge model variant '{name}'. Available: {list(model_configs)}"
-        )
+        raise KeyError(f"Unknown edge model '{name}'")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     cfg = model_configs[name]
     model_path = hf_hub_download(
-        repo_id=cfg["repo"],
-        filename=cfg["filename"],
-        local_dir="models",
+        repo_id=cfg["repo"], filename=cfg["filename"], local_dir="models"
     )
-    model = TimmFRWrapperV2(cfg["timm_model"], batchnorm=False)
-
-    post_setup = cfg["post_setup"]
-    model = post_setup(model)
-    if not isinstance(model, torch.nn.Module):  # static type + runtime safety
-        raise TypeError(
-            f"post_setup for '{name}' must return nn.Module, got {type(model)}. Did you call model(...) instead of returning it?"
-        )
+    model = TimmFRWrapperV2(cfg["timm_model"])
+    model = cfg["post_setup"](model)
 
     state = torch.load(model_path, map_location="cpu")
     missing, unexpected = model.load_state_dict(state, strict=False)
     if missing or unexpected:
-        print(f"[warn] Missing keys: {missing} | Unexpected keys: {unexpected}")
+        print(f"[warn] Missing: {missing} | Unexpected: {unexpected}")
 
     model.eval().to(device)
     _EDGE_MODEL_CACHE[name] = model
@@ -144,31 +111,63 @@ def compare(img_left, img_right, variant="edgeface_s_gamma_05") -> float:
     mdl = get_edge_model(variant)
     dev = next(mdl.parameters()).device
     with torch.no_grad():
-        ea = mdl(_tx(cv2.cvtColor(img_left, cv2.COLOR_RGB2BGR))[None].to(dev))[0]
-        eb = mdl(_tx(cv2.cvtColor(img_right, cv2.COLOR_RGB2BGR))[None].to(dev))[0]
+        ea = mdl(_tx(cv2.cvtColor(img_left, cv2.COLOR_BGR2RGB))[None].to(dev))[0]
+        eb = mdl(_tx(cv2.cvtColor(img_right, cv2.COLOR_BGR2RGB))[None].to(dev))[0]
     pct = float(F.cosine_similarity(ea[None], eb[None]).item() * 100)
     pct = max(0, min(100, pct))
     print(f"Similarity: {pct:.2f}%")
     return pct
 
 
-if __name__ == "__main__":
-    import os
+# Threshold for face matching (percentage)
+COMPARISON_THRESHHOLD = 75.0  # 75% similarity threshold
 
-    # print device
-    print("Using device:", "cuda" if torch.cuda.is_available() else "cpu")
 
-    image_files = [
-        os.path.join("data", "test_images", f)
-        for f in os.listdir(os.path.join("data", "test_images"))
-        if f.endswith(".png")
-    ]
-    image_files = sorted(image_files, key=os.path.getmtime, reverse=True)
-    if len(image_files) < 2:
-        print("Not enough images in data/test_images/")
-        exit(1)
-    image_path1 = image_files[0]
-    image_path2 = image_files[1]
-    image_array1 = cv2.imread(image_path1)
-    image_array2 = cv2.imread(image_path2)
-    print(compare(image_array1, image_array2, "edgeface_s_gamma_05"))
+def compare_embeddings(embedding1, embedding2) -> float:
+    """Compare two face embeddings and return similarity percentage."""
+    # Convert numpy arrays to torch tensors if needed
+    if isinstance(embedding1, torch.Tensor):
+        emb1 = embedding1
+    else:
+        emb1 = torch.from_numpy(embedding1)
+    
+    if isinstance(embedding2, torch.Tensor):
+        emb2 = embedding2
+    else:
+        emb2 = torch.from_numpy(embedding2)
+    
+    # Compute cosine similarity and convert to percentage
+    similarity = F.cosine_similarity(emb1[None], emb2[None]).item()
+    pct = float(similarity * 100)
+    pct = max(0, min(100, pct))
+    return pct
+
+
+def get_face_encodings(img_bgr, variant="edgeface_s_gamma_05"):
+    """Extract face encodings from detected faces in an image."""
+    from detection import detect_faces
+    
+    faces = detect_faces(img_bgr)
+    if not faces:
+        return []
+    
+    model = get_edge_model(variant)
+    device = next(model.parameters()).device
+    encodings = []
+    
+    with torch.no_grad():
+        for face in faces:
+            img_rgb = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
+            encoding = model(_tx(img_rgb)[None].to(device))[0].cpu().numpy()
+            encodings.append(encoding)
+    
+    return encodings
+
+
+def compare_faces(known_embeddings, face_encoding, tolerance=COMPARISON_THRESHHOLD):
+    """Compare a face encoding against known embeddings."""
+    matches = []
+    for known_embedding in known_embeddings:
+        similarity = compare_embeddings(face_encoding, known_embedding)
+        matches.append(similarity >= tolerance)
+    return matches
