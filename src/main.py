@@ -37,6 +37,11 @@ def snap_once(geom: str) -> Path:
     # grim is non-interactive with -g; avoids hyprshot pipeline
     sp.run(["grim", "-g", geom, str(out_path)], check=True)
     print(f"Saved screenshot to {out_path}")
+    screenshots = sorted(
+        OUT_DIR.glob("*.png"), key=lambda p: p.stat().st_mtime, reverse=True
+    )
+    for old in screenshots[5:]:
+        old.unlink()
     return out_path
 
 
