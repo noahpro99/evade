@@ -38,12 +38,14 @@ model_configs = {
 }
 
 # FIXED: proper preprocessing
-_tx = transforms.Compose([
-    transforms.ToPILImage(),
-    transforms.Resize((112, 112)),
-    transforms.ToTensor(),
-    transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
-])
+_tx = transforms.Compose(
+    [
+        transforms.ToPILImage(),
+        transforms.Resize((112, 112)),
+        transforms.ToTensor(),
+        transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
+    ]
+)
 
 
 class LoRaLin(nn.Module):
@@ -120,7 +122,7 @@ def compare(img_left, img_right, variant="edgeface_s_gamma_05") -> float:
 
 
 # Threshold for face matching (percentage)
-COMPARISON_THRESHHOLD = 75.0  # 75% similarity threshold
+COMPARISON_THRESHOLD = 75.0  # 75% similarity threshold
 
 
 def compare_embeddings(embedding1, embedding2) -> float:
@@ -130,12 +132,12 @@ def compare_embeddings(embedding1, embedding2) -> float:
         emb1 = embedding1
     else:
         emb1 = torch.from_numpy(embedding1)
-    
+
     if isinstance(embedding2, torch.Tensor):
         emb2 = embedding2
     else:
         emb2 = torch.from_numpy(embedding2)
-    
+
     # Compute cosine similarity and convert to percentage
     similarity = F.cosine_similarity(emb1[None], emb2[None]).item()
     pct = float(similarity * 100)
@@ -146,28 +148,49 @@ def compare_embeddings(embedding1, embedding2) -> float:
 def get_face_encodings(img_bgr, variant="edgeface_s_gamma_05"):
     """Extract face encodings from detected faces in an image."""
     from detection import detect_faces
-    
+
     faces = detect_faces(img_bgr)
     if not faces:
         return []
-    
+
     model = get_edge_model(variant)
     device = next(model.parameters()).device
     encodings = []
-    
+
     with torch.no_grad():
         for face in faces:
             img_rgb = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
             encoding = model(_tx(img_rgb)[None].to(device))[0].cpu().numpy()
             encodings.append(encoding)
-    
+
     return encodings
 
 
-def compare_faces(known_embeddings, face_encoding, tolerance=COMPARISON_THRESHHOLD):
+def compare_faces(known_embeddings, face_encoding, tolerance=COMPARISON_THRESHOLD):
     """Compare a face encoding against known embeddings."""
     matches = []
     for known_embedding in known_embeddings:
         similarity = compare_embeddings(face_encoding, known_embedding)
         matches.append(similarity >= tolerance)
     return matches
+
+
+if __name__ == "__main__":
+    import sys
+
+    if len(sys.argv) != 3:
+        print("Usage: python similarity.py <image1> <image2>")
+        sys.exit(1)
+
+    img1_path = sys.argv[1]
+    img2_path = sys.argv[2]
+
+    img1 = cv2.imread(img1_path)
+    img2 = cv2.imread(img2_path)
+
+    if img1 is None or img2 is None:
+        print("Error loading images.")
+        sys.exit(1)
+
+    result = compare(img1, img2)
+    print(f"Final similarity: {result:.2f}%")

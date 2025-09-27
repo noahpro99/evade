@@ -12,15 +12,14 @@ import cv2
 import numpy as np
 import pandas as pd
 import torch
-import torch.nn.functional as F
 
-from data import OFFENDER_CSV_PATH, download_images_if_missing, OFFENDER_IMAGES_DIR, unmake_safe_name
+from data import OFFENDER_CSV_PATH, download_images_if_missing, unmake_safe_name
 from detection import detect_faces
-from similarity import _tx, get_edge_model, COMPARISON_THRESHHOLD, compare_embeddings, get_face_encodings
+from similarity import COMPARISON_THRESHOLD, _tx, compare_embeddings, get_edge_model
 
 OUT_DIR = Path.cwd() / "data" / "sshots"
 EMBEDDINGS_PATH = Path.cwd() / "models" / "offender_embeddings.pkl"
-TITLE_KEYWORD = "Photo Booth"  # Example keyword to identify target window
+TITLE_KEYWORD = "Messenger call"  # Example keyword to identify target window
 INTERVAL_SEC = 1.0
 OFFENDER_REGISTRY = pd.read_csv(OFFENDER_CSV_PATH)
 IS_MACOS = platform.system() == "Darwin"
@@ -139,40 +138,41 @@ def snap_once_linux(geom: str) -> np.ndarray | None:
 
 def snap_once_macos(geom: str) -> np.ndarray | None:
     import tempfile
-    
+
     pos_part, size_part = geom.split(" ")
     x, y = map(int, pos_part.split(","))
     w, h = map(int, size_part.split("x"))
-    
-    with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_file:
+
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
         temp_path = temp_file.name
-    
+
     try:
         cmd = ["screencapture", "-R", f"{x},{y},{w},{h}", "-o", temp_path]
-        
+
         result = sp.run(cmd, capture_output=True, text=True)
         if result.returncode != 0:
             print(f"ERROR: screencapture failed with return code {result.returncode}")
             print(f"stderr: {result.stderr}")
             return None
-        
+
         if not os.path.exists(temp_path) or os.path.getsize(temp_path) == 0:
             print("ERROR: Screenshot file is empty or was not created")
             return None
-            
+
         decoded_img = cv2.imread(temp_path)
         if decoded_img is None:
             print("ERROR: Failed to load screenshot image")
             return None
-            
+
         return decoded_img
-        
+
     except Exception as e:
         print(f"Error capturing screenshot on macOS: {e}")
         return None
     finally:
         if os.path.exists(temp_path):
             os.unlink(temp_path)
+
 
 def find_match(
     img_fromstream: np.ndarray, offender_embeddings: dict[str, np.ndarray], model
@@ -210,7 +210,7 @@ def main():
 
         print(f"Starting monitoring for windows containing '{TITLE_KEYWORD}'...")
         print("Press Ctrl+C to stop.")
-        
+
         while True:
             addr, geom = find_target()
             if geom:
@@ -227,9 +227,9 @@ def main():
                     if faces:
                         model = get_edge_model("edgeface_s_gamma_05")
                         for i, face in enumerate(faces):
-                            cv2.imshow(f"Face {i+1}", face)
-                            cv2.waitKey(1)
-                            
+                            # cv2.imshow(f"Face {i + 1}", face)
+                            # cv2.waitKey(1)
+
                             offender = find_match(face, offender_embeddings, model)
                             if offender is not None:
                                 print("Offender details:")
