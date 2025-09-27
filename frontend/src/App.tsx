@@ -548,12 +548,22 @@ const App = () => {
                 onClick={() => setActiveTab(id)}
                 className={`flex flex-col items-center space-y-2 px-8 py-3 rounded-xl transition-all ${
                   activeTab === id
-                    ? "bg-white shadow-sm border border-white"
-                    : "hover:bg-white"
+                    ? "bg-dark text-white"
+                    : "text-dark hover:bg-white/50"
                 }`}
               >
-                <Icon className={`w-5 h-5 text-dark`} />
-                <span className={`text-xs font-medium text-dark`}>{label}</span>
+                <Icon
+                  className={`w-5 h-5 ${
+                    activeTab === id ? "text-white" : "text-dark"
+                  }`}
+                />
+                <span
+                  className={`text-xs font-medium ${
+                    activeTab === id ? "text-white" : "text-dark"
+                  }`}
+                >
+                  {label}
+                </span>
               </button>
             ))}
           </div>
