@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 
 from data import OFFENDER_CSV_PATH, OFFENDER_IMAGES, unmake_safe_name
-from model import compare
+from similarity import compare
 
 OUT_DIR = Path.cwd() / "data" / "sshots"
 TITLE_KEYWORD = "Messenger call"
