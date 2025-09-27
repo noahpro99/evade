@@ -1,5 +1,7 @@
-from instagrapi import Client
 from pathlib import Path
+
+from instagrapi import Client
+
 from settings import settings
 
 instagram_client = Client()
@@ -33,11 +35,11 @@ def send_photo_dm(photo_path, recipient_username, message="Check out this photo!
 
         print(f"Sending photo: {photo_file}")
 
-        user_id = instagram_client.user_id_from_username(recipient_username)
+        user_id = int(instagram_client.user_id_from_username(recipient_username))
         print(f"Sending photo to user ID: {user_id}")
 
         # Send photo first
-        result = instagram_client.direct_send_photo(str(photo_file), [user_id])
+        result = instagram_client.direct_send_photo(photo_file, [user_id])
         print(f"Photo sent successfully! Result: {result}")
 
         # Send text message separately if provided

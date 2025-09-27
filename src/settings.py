@@ -24,4 +24,4 @@ class AppSettings(BaseSettings):
     )
 
 
-settings = AppSettings()
+settings = AppSettings()  # pyright: ignore[reportCallIssue]

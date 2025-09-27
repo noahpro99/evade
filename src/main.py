@@ -22,8 +22,8 @@ from data import (
 )
 from detection import detect_faces
 from notifacation import send_photo_dm
-from similarity import COMPARISON_THRESHOLD, _tx, compare_embeddings, get_edge_model
 from settings import settings
+from similarity import COMPARISON_THRESHOLD, _tx, compare_embeddings, get_edge_model
 
 OUT_DIR = Path.cwd() / "data" / "sshots"
 EMBEDDINGS_PATH = Path.cwd() / "models" / "offender_embeddings.pkl"
@@ -277,7 +277,7 @@ def main():
                             offender = find_match(face, offender_embeddings, model)
                             if offender is not None:
                                 print("Offender details:")
-                                print(offender.to_string())
+                                print(offender)
                                 success = send_offender_photo_dm(
                                     offender,
                                     recipient_username=settings.INSTAGRAM_DM_RECIPIENT,
