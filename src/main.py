@@ -13,14 +13,24 @@ import numpy as np
 import pandas as pd
 import torch
 
-from data import OFFENDER_CSV_PATH, download_images_if_missing, unmake_safe_name
+from audio import spawn_audio_detection_thread
+from data import (
+    OFFENDER_CSV_PATH,
+    OFFENDER_IMAGES_DIR,
+    download_images_if_missing,
+    make_safe_name,
+    unmake_safe_name,
+)
 from detection import detect_faces
+from notification import send_photo_dm
+from settings import settings
 from similarity import COMPARISON_THRESHOLD, _tx, compare_embeddings, get_edge_model
 
 OUT_DIR = Path.cwd() / "data" / "sshots"
 EMBEDDINGS_PATH = Path.cwd() / "models" / "offender_embeddings.pkl"
 TITLE_KEYWORD = "Messenger call"  # Example keyword to identify target window
 INTERVAL_SEC = 1.0
+COOLDOWN_SEC = 5 * 60  # 5 minutes cooldown between notifications
 OFFENDER_REGISTRY = pd.read_csv(OFFENDER_CSV_PATH)
 IS_MACOS = platform.system() == "Darwin"
 
@@ -176,7 +186,7 @@ def snap_once_macos(geom: str) -> np.ndarray | None:
 
 def find_match(
     img_fromstream: np.ndarray, offender_embeddings: dict[str, np.ndarray], model
-) -> pd.Series | None:
+) -> dict | None:
     device = next(model.parameters()).device
     with torch.no_grad():
         img_rgb = cv2.cvtColor(img_fromstream, cv2.COLOR_BGR2RGB)
@@ -191,9 +201,45 @@ def find_match(
             )
             offender_row = OFFENDER_REGISTRY[OFFENDER_REGISTRY["Name"] == offender_name]
             if not offender_row.empty:
-                return offender_row.iloc[0]
+                return offender_row.iloc[0].to_dict()
+            else:
+                print(f"No offender information found for {offender_name}")
+                return None
     print("No match found")
     return None
+
+
+def send_offender_photo_dm(offender: dict, recipient_username: str) -> bool:
+    try:
+        photo_path = (
+            OFFENDER_IMAGES_DIR / f"{make_safe_name(offender.get('Name', ''))}.jpg"
+        )
+        if not photo_path.exists():
+            print(f"Photo not found locally: {photo_path}")
+            print("Make sure to run the image download script first!")
+            return False
+        message = f"""🚨 OFFENDER ALERT 🚨
+
+Name: {offender.get("Name", "N/A")}
+Age: {offender.get("Age", "N/A")}
+Status: {offender.get("Status", "N/A")}
+Tier: {offender.get("Tier", "N/A")}
+Height: {offender.get("Height", "N/A")}
+Weight: {offender.get("Weight", "N/A")}
+Hair: {offender.get("Hair", "N/A")}
+Eyes: {offender.get("Eyes", "N/A")}
+Race: {offender.get("Race", "N/A")}
+
+Registration #: {offender.get("Probation Registration Number", "N/A")}
+Convictions: {offender.get("Convictions", "N/A")}
+
+⚠️ Stay alert and report any sightings to authorities."""
+
+        return send_photo_dm(str(photo_path), recipient_username, message)
+
+    except Exception as e:
+        print(f"Failed to send offender alert: {e}")
+        return False
 
 
 def main():
@@ -208,10 +254,24 @@ def main():
                 offender_embeddings = pickle.load(f)
             print(f"Loaded {len(offender_embeddings)} offender embeddings.")
 
+        # Start audio monitoring in a separate thread
+        audio_thread = threading.Thread(
+            target=spawn_audio_detection_thread, daemon=True
+        )
+        audio_thread.start()
+        print("Audio monitoring started in background thread.")
+
         print(f"Starting monitoring for windows containing '{TITLE_KEYWORD}'...")
         print("Press Ctrl+C to stop.")
 
+        last_notification_time = 0
+
         while True:
+            current_time = time.time()
+            if current_time - last_notification_time < COOLDOWN_SEC:
+                time.sleep(INTERVAL_SEC)
+                continue
+
             addr, geom = find_target()
             if geom:
                 focus_window(addr)
@@ -233,7 +293,16 @@ def main():
                             offender = find_match(face, offender_embeddings, model)
                             if offender is not None:
                                 print("Offender details:")
-                                print(offender.to_string())
+                                print(offender)
+                                success = send_offender_photo_dm(
+                                    offender,
+                                    recipient_username=settings.INSTAGRAM_DM_RECIPIENT,
+                                )
+                                if success:
+                                    last_notification_time = time.time()
+                                else:
+                                    print("Failed to send offender alert.")
+
                 else:
                     print("Failed to capture screenshot")
             else:

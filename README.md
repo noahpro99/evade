@@ -1,3 +1,7 @@
+![EVADE Logo](frontend/public/name.png)
+
+# EVADE
+
 ```bash
 # macos
 uv sync --extra cpu

@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@theme {
+  --color-white: #f0f0e9;
+  --color-dark: #374245;
+}
+
+/* Custom color utilities */
+.bg-dark {
+  background-color: var(--color-dark);
+}
+.bg-white {
+  background-color: var(--color-white);
+}
+.text-dark {
+  color: var(--color-dark);
+}
+.text-white {
+  color: var(--color-white);
+}
+.border-dark {
+  border-color: var(--color-dark);
+}
+.border-white {
+  border-color: var(--color-white);
+}
