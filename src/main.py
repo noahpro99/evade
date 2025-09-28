@@ -189,8 +189,7 @@ def find_match(
 ) -> dict | None:
     device = next(model.parameters()).device
     with torch.no_grad():
-        img_rgb = cv2.cvtColor(img_fromstream, cv2.COLOR_BGR2RGB)
-        live_embedding = model(_tx(img_rgb)[None].to(device))[0].cpu().numpy()
+        live_embedding = model(_tx(img_fromstream)[None].to(device))[0].cpu().numpy()
 
     for offender_filename, stored_embedding in offender_embeddings.items():
         similarity = compare_embeddings(live_embedding, stored_embedding)
