@@ -1,108 +1,84 @@
-import os
-import gradio as gr
-import requests
-import json
+from __future__ import annotations
+
+from pathlib import Path
 import cv2
+import gradio as gr
 import numpy as np
-import time
+import torch
+import torch.nn.functional as F
+from torchvision import transforms
+from huggingface_hub import hf_hub_download
+
+from title import title_css, title_with_logo
+
+from face_alignment import align
 from PIL import Image
-from fr.engine.header import *
-from fl.engine.header import *
-import fr.engine.header as fr_header
-import fl.engine.header as fl_header
-import os
-import sys
-import numpy as np
-import ctypes, ctypes.util
-from enum import Enum
-from ctypes import *
-from numpy.ctypeslib import ndpointer
+import net
 
-def print_log(fmt): print("[LOG] \033[98m{}\033[00m" .format(fmt))
-def print_info(fmt): print("[INFO] \033[92m{}\033[00m" .format(fmt))
-def print_error(fmt): print("[ERR] \033[91m{}\033[00m" .format(fmt)) 
-def print_warning(fmt): print("[WARNING] \033[93m{}\033[00m" .format(fmt))
+model_configs = {
+    "HyperFace-10k-LDM": {
+        "repo": "idiap/HyperFace-10k-LDM",
+        "filename": "HyperFace_10k_LDM.ckpt",
+    },
+    "HyperFace-10k-StyleGAN": {
+        "repo": "idiap/HyperFace-10k-StyleGAN",
+        "filename": "HyperFace_10k_StyleGAN.ckpt",
+    },
+    "HyperFace-50k-StyleGAN": {
+        "repo": "idiap/HyperFace-50k-StyleGAN",
+        "filename": "HyperFace_50k_StyleGAN.ckpt",
+    },
+}
 
-class ENGINE_CODE(Enum):
-    E_NO_FACE = 0
-    E_ACTIVATION_ERROR = -1
-    E_ENGINE_INIT_ERROR = -2    
+DATA_DIR = Path("data")
+EXTS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
+PRELOADED = sorted(p for p in DATA_DIR.iterdir() if p.suffix.lower() in EXTS)
 
-lib_path = os.path.abspath(os.path.dirname(__file__)) + '/librecognition_v6.so'
-lib = cdll.LoadLibrary(lib_path)
+HYPERFACE_MODELS = [
+    "HyperFace-10k-LDM",
+    "HyperFace-10k-StyleGAN",
+    "HyperFace-50k-StyleGAN",
+]
 
-get_version = lib.ttv_version
-get_version.argtypes = []
-get_version.restype = ctypes.c_char_p
+def to_input(pil_rgb_image):
+    np_img = np.array(pil_rgb_image)
+    brg_img = ((np_img[:,:,::-1] / 255.) - 0.5) / 0.5
+    tensor = torch.tensor([brg_img.transpose(2,0,1)]).float()
+    return tensor
 
-get_deviceid = lib.ttv_get_hwid
-get_deviceid.argtypes = []
-get_deviceid.restype = ctypes.c_char_p
 
-init_sdk = lib.ttv_init
-init_sdk.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-init_sdk.restype = ctypes.c_int32
+def get_face_rec_model(name: str) -> torch.nn.Module:
+    if name not in get_face_rec_model.cache:
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        model_path = hf_hub_download(
+            repo_id=model_configs[name]["repo"],
+            filename=model_configs[name]["filename"],
+            local_dir="models",
+        )
 
-init_sdk_offline = lib.ttv_init_offline
-init_sdk_offline.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-init_sdk_offline.restype = ctypes.c_int32
+        model = net.build_model(model_name='ir_50')
+        statedict = torch.load(model_path, map_location=device)['state_dict']
+        model_statedict = {key[6:]:val for key, val in statedict.items() if key.startswith('model.')}
+        model.load_state_dict(model_statedict)
+        model.eval()
+        model.to(device)
+        
+        get_face_rec_model.cache[name] = model
+    return get_face_rec_model.cache[name]
 
-extract_template = lib.ttv_extract_feature
-extract_template.argtypes = [ndpointer(ctypes.c_ubyte, flags='C_CONTIGUOUS'), ctypes.c_int32, ctypes.c_int32, ndpointer(ctypes.c_int32, flags='C_CONTIGUOUS'), ndpointer(ctypes.c_ubyte, flags='C_CONTIGUOUS'), ndpointer(ctypes.c_int32, flags='C_CONTIGUOUS')]
-extract_template.restype = ctypes.c_int
 
-calculate_similarity = lib.ttv_compare_feature
-calculate_similarity.argtypes = [ndpointer(ctypes.c_ubyte, flags='C_CONTIGUOUS'), ndpointer(ctypes.c_ubyte, flags='C_CONTIGUOUS')]
-calculate_similarity.restype = ctypes.c_double
+get_face_rec_model.cache = {}
 
-DEFAULT_THRESHOLD = 0.67
-def compare_face(image_mat1, image_mat2, match_threshold=DEFAULT_THRESHOLD):
-    result = ""
-    if image_mat1 is None:
-        result = "Failed to open image1"
-        return result, None, None, None
+def compare(img_left, img_right, variant):
 
-    if image_mat2 is None:
-        result = "Failed to open image2"
-        return result, None, None, None
-    
-    face_bbox_1 = np.zeros([4], dtype=np.int32)
-    template_1 = np.zeros([2048], dtype=np.uint8)
-    template_len_1 = np.zeros([1], dtype=np.int32)
-    width_1 = image_mat1.shape[1]
-    height_1 = image_mat1.shape[0]
+    img_left = Image.fromarray(img_left).convert('RGB')
+    img_right = Image.fromarray(img_right).convert('RGB')
 
-    ret = extract_template(image_mat1, width_1, height_1, face_bbox_1, template_1, template_len_1)
-    if ret <= 0:
-        if ret == ENGINE_CODE.E_ACTIVATION_ERROR.value:
-            result = "ACTIVATION ERROR"
-        elif ret == ENGINE_CODE.E_ENGINE_INIT_ERROR.value:
-            result = "ENGINE INIT ERROR"
-        elif ret == ENGINE_CODE.E_NO_FACE.value:
-            result = "NO FACE in image1"
-        return result, None, None, None
-    
-
-    face_bbox_2 = np.zeros([4], dtype=np.int32)
-    template_2 = np.zeros([2048], dtype=np.uint8)
-    template_len_2 = np.zeros([1], dtype=np.int32)
-    width_2 = image_mat2.shape[1]
-    height_2 = image_mat2.shape[0]
-
-    ret = extract_template(image_mat2, width_2, height_2, face_bbox_2, template_2, template_len_2)
-    if ret <= 0:
-        if ret == ENGINE_CODE.E_ACTIVATION_ERROR.value:
-            result = "ACTIVATION ERROR"
-        elif ret == ENGINE_CODE.E_ENGINE_INIT_ERROR.value:
-            result = "ENGINE INIT ERROR"
-        elif ret == ENGINE_CODE.E_NO_FACE.value:
-            result = "NO FACE in image2"
-        return result, None, None, None
-
-    match_score = calculate_similarity(template_1, template_2)
-    if match_score > match_threshold:
-        result = "SAME PERSON"
-    else:
-        result = "DIFFERENT PERSON"
-
-    return result, match_score, [face_bbox_1, face_bbox_2], [template_1, template_2]
+    mdl = get_face_rec_model(variant)
+    dev = next(mdl.parameters()).device
+    with torch.no_grad():
+        ea = mdl(to_input(img_left).to(dev))[0]
+        eb = mdl(to_input(img_right).to(dev))[0]
+    pct = float(F.cosine_similarity(ea, eb).item() * 100)
+    pct = max(0, min(100, pct))
+    return img_left, img_right, pct
