@@ -1,5 +1,7 @@
 ![EVADE Logo](frontend/public/name.png)
 
+[![VTHacks 2025 Demo](http://img.youtube.com/vi/0WOYVjff0hk/0.jpg)](https://www.youtube.com/watch?v=0WOYVjff0hk "VTHacks 2025 Demo")
+
 # EVADE
 
 Proactive personal safety through AI-powered smart glasses
